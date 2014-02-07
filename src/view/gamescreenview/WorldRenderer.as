@@ -5,6 +5,8 @@ package view.gamescreenview
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import framework1_0.TiledMap.TiledMap;
+	import model.TiledMapFormat;
 	
 	/**
 	 * ...
@@ -25,6 +27,8 @@ package view.gamescreenview
 		private var scaledBmpData:BitmapData;
 		private var resizedRect:Rectangle;
 		
+		private var tiledMap:TiledMap;
+		
 		public function WorldRenderer(world:World)
 		{
 			this.world = world;
@@ -34,13 +38,19 @@ package view.gamescreenview
 			
 			resizedRect = new Rectangle(0, 0, 64, 64);
 			scaledBmpData = getScaledBitmapData(imgBmp.bitmapData, tile_1, 2, 2);
+			
+			var tiledBmpD:BitmapData = new BitmapData(256, 64, false, 0x000000);
+			tiledBmpD.copyPixels(imgBmp.bitmapData, new Rectangle(0, 0, 256, 32), new Point(0, 0));
+			tiledBmpD.copyPixels(imgBmp.bitmapData, new Rectangle(0, 32, 128, 32), new Point(0, 32));
+			tiledMap = new TiledMap(tiledBmpD, new TiledMapFormat());
 		}
 		
 		public function render(canvasBd:BitmapData):void
 		{
 			//	canvasBd.copyPixels(texture.bitmapData, tile_1, pos);
-			canvasBd.copyPixels(imgBmp.bitmapData, tile_1, pos2);
-			canvasBd.copyPixels(scaledBmpData, resizedRect, pos);
+	//		canvasBd.copyPixels(imgBmp.bitmapData, tile_1, pos2);
+	//		canvasBd.copyPixels(scaledBmpData, resizedRect, pos);
+			tiledMap.draw(canvasBd, new Point(0, 0));
 		}
 		
 		/**
@@ -52,7 +62,8 @@ package view.gamescreenview
 		 * @param	resizedRect
 		 * @return 	- The newly created scaled BitmapData
 		 */
-		private function getScaledBitmapData(srcBitmapData:BitmapData, srcRect:Rectangle, scaleX:Number = 1, scaleY:Number = 1, resizedRect:Rectangle = null):BitmapData
+		private function getScaledBitmapData(srcBitmapData:BitmapData, srcRect:Rectangle, scaleX:Number = 1, scaleY:Number = 1, 
+		resizedRect:Rectangle = null):BitmapData
 		{
 			var tempBitmapData:BitmapData;
 			var matrix:Matrix = new Matrix();

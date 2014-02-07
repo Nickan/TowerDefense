@@ -8,8 +8,7 @@ package view.gamescreenview
 	{
 		public var renderer:WorldRenderer;
 		
-		public function World() 
-		{
+		public function World()  {
 			
 		}
 		
