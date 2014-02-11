@@ -1,0 +1,22 @@
+<TextureAtlas imagePath="tiledmap.png">
+	<SubTexture name="cave_1" x="34" y="170" width="32" height="32"/>
+	<SubTexture name="cave_2" x="34" y="136" width="32" height="32"/>
+	<SubTexture name="cave_3" x="34" y="102" width="32" height="32"/>
+	<SubTexture name="cave_4" x="68" y="170" width="32" height="32"/>
+	<SubTexture name="cave_5" x="34" y="34" width="32" height="32"/>
+	<SubTexture name="cave_6" x="34" y="0" width="32" height="32"/>
+	<SubTexture name="cave_7" x="0" y="204" width="32" height="32"/>
+	<SubTexture name="cave_8" x="0" y="170" width="32" height="32"/>
+	<SubTexture name="cave_9" x="0" y="136" width="32" height="32"/>
+	<SubTexture name="tile_1" x="0" y="102" width="32" height="32"/>
+	<SubTexture name="tile_10" x="68" y="0" width="32" height="32"/>
+	<SubTexture name="tile_11" x="34" y="204" width="32" height="32"/>
+	<SubTexture name="tile_2" x="0" y="68" width="32" height="32"/>
+	<SubTexture name="tile_3" x="0" y="34" width="32" height="32"/>
+	<SubTexture name="tile_4" x="0" y="0" width="32" height="32"/>
+	<SubTexture name="tile_5" x="34" y="68" width="32" height="32"/>
+	<SubTexture name="tile_6" x="68" y="136" width="32" height="32"/>
+	<SubTexture name="tile_7" x="68" y="102" width="32" height="32"/>
+	<SubTexture name="tile_8" x="68" y="68" width="32" height="32"/>
+	<SubTexture name="tile_9" x="68" y="34" width="32" height="32"/>
+</TextureAtlas>

@@ -18,7 +18,7 @@ package framework1_0.TiledMap
 		private var tiledMapFormat:TiledMapFormat;
 		
 		private var sprite:Sprite;
-		private var tiles:Array;
+		private var tileSprites:Array;
 		
 		public function TiledMap(bitmapData:BitmapData, tiledMapFormat:TiledMapFormat)
 		{
@@ -32,12 +32,12 @@ package framework1_0.TiledMap
 		
 		private function initializeTiles(): void {
 			var tiledMap:Array = tiledMapFormat.tiledMapArray;
-			tiles = new Array();
+			tileSprites = new Array();
 			for (var row:uint = 0; row < tiledMap.length; row++) {
-				tiles.push(new Array());
+				tileSprites.push(new Array());
 				for (var col:uint = 0; col < tiledMap[row].length; col++) {
 					var tile:Tile = tiledMap[row][col];
-					tiles[row].push(new Sprite(bitmapData, tile.rect));
+					tileSprites[row].push(new Sprite(bitmapData, tile.rect));
 				//	canvasBd.copyPixels(bitmapData, tile.rect, tile.point);
 				}
 			}
@@ -50,7 +50,7 @@ package framework1_0.TiledMap
 			for (var row:uint = 0; row < tiledMap.length; row++) {
 				for (var col:uint = 0; col < tiledMap[row].length; col++) {
 					var tile:Tile = tiledMap[row][col];
-					tiles[row][col].draw(canvasBd, tile.point);
+					tileSprites[row][col].draw(canvasBd, tile.point);
 				}
 			}
 		}

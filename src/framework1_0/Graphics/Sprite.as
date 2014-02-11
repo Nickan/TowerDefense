@@ -31,6 +31,12 @@ package framework1_0.Graphics
 			modBmpData = new BitmapData(srcRect.width * 1.5, srcRect.height * 1.5, true, 0x000000);
 		}
 		
+		/**
+		 * 
+		 * @param	canvasBmpData - The BitmapData which the modified BitmapData tile will be drawn
+		 * @param	point					- The position in the passed BitmapData the modified BitmapData tile will be drawn
+		 * @param	rotation				- The rotation of the modifiled BitmapData tile
+		 */
 		public function draw(canvasBmpData:BitmapData, point:Point, rotation:Number = 0): void {
 			Sprite.matrix.identity();
 			Sprite.matrix.translate( -bounds.width / 2, -bounds.height / 2);

@@ -1,41 +1,40 @@
 package 
 {
-	import flash.display.Sprite;
+	import citrus.core.starling.StarlingCitrusEngine;
+	import citrus.core.starling.ViewportMode;
 	import flash.events.Event;
 	import framework1_0.Game;
-	import screen.GameScreen;
+	import state.GameState;
 	
 	/**
 	 * ...
 	 * @author Nickan
 	 */
-	public class Main extends Sprite 
+	
+//	[SWF(width = "800", height = "600", framerate = "60", backgroundColor = "#000000")]
+	public class Main extends StarlingCitrusEngine
 	{
 		private var game:Game;
 		
 		public function Main():void 
 		{
-			if (stage) init();
-			else addEventListener(Event.ADDED_TO_STAGE, init);
+			_baseWidth = 800;
+			_baseHeight = 600;
+			_viewportMode = ViewportMode.LETTERBOX;
 		}
 		
-		private function init(e:Event = null):void 
+		//We have a stage so we can call setup starling
+		override protected function handleAddedToStage(e:Event):void
 		{
-			removeEventListener(Event.ADDED_TO_STAGE, init);
-			// entry point
-			game = new Game(stage.stageWidth, stage.stageHeight);
-			
-			// SEtting the screen of the game as GameScreen (for now)
-			game.SetScreen(new GameScreen(game));
-			
-			addChild(game.canvasBitmap);
-			
-			addEventListener(Event.ENTER_FRAME, Run);
+			super.handleAddedToStage(e);
+			setUpStarling(true);
 		}
-		
-		private function Run(e:Event):void
+ 		//starling is ready, we can start a state
+		override public function handleStarlingReady():void
 		{
-			game.Update();
+			//load assets etc..
+			super.handleStarlingReady();
+			state = new GameState();
 		}
 		
 	}

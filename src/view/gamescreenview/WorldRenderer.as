@@ -1,12 +1,13 @@
 package view.gamescreenview
 {
 	import flash.display.Bitmap;
+	import starling.textures.TextureAtlas;
+	
+	import citrus.core.starling.StarlingState;
 	import flash.display.BitmapData;
-	import flash.geom.Matrix;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import framework1_0.TiledMap.TiledMap;
-	import model.TiledMapFormat;
+	import starling.textures.Texture;
+	
+	import citrus.utils.objectmakers.ObjectMakerStarling;
 	
 	/**
 	 * ...
@@ -14,75 +15,27 @@ package view.gamescreenview
 	 */
 	public class WorldRenderer
 	{
-		[Embed(source="../../../assets/allgameimages.png")]
-		private var SourceImage:Class;
-		private var imgBmp:Bitmap = new SourceImage();
+	//	[Embed(source="../../../assets/allgameimages.png")]
+	//	private var SourceImage:Class;
+	//	private var imgBmp:Bitmap = new SourceImage();
+		[Embed(source="../../../assets/tiledmap.png")]
+		private var TiledMapImage:Class;
+	
+		[Embed(source="../../../assets/tiledmap.tmx", mimeType="application/octet-stream")]
+		private var TiledMap:Class;
 		
-		private var world:World;
+		[Embed(source="../../../assets/tiledmap.xml")]
+		private var TiledMapXML:Class;
 		
-		private var tile_1:Rectangle;
-		private var pos:Point;
-		private var pos2:Point;
-		
-		private var scaledBmpData:BitmapData;
-		private var resizedRect:Rectangle;
-		
-		private var tiledMap:TiledMap;
-		
-		public function WorldRenderer(world:World)
+		public function WorldRenderer()
 		{
-			this.world = world;
-			tile_1 = new Rectangle(0, 0, 32, 32);
-			pos = new Point(0, 0);
-			pos2 = new Point(64, 64);
 			
-			resizedRect = new Rectangle(0, 0, 64, 64);
-			scaledBmpData = getScaledBitmapData(imgBmp.bitmapData, tile_1, 2, 2);
-			
-			var tiledBmpD:BitmapData = new BitmapData(256, 64, false, 0x000000);
-			tiledBmpD.copyPixels(imgBmp.bitmapData, new Rectangle(0, 0, 256, 32), new Point(0, 0));
-			tiledBmpD.copyPixels(imgBmp.bitmapData, new Rectangle(0, 32, 128, 32), new Point(0, 32));
-			tiledMap = new TiledMap(tiledBmpD, new TiledMapFormat());
 		}
 		
-		public function render(canvasBd:BitmapData):void
+		public function initialize(): void
 		{
-			//	canvasBd.copyPixels(texture.bitmapData, tile_1, pos);
-	//		canvasBd.copyPixels(imgBmp.bitmapData, tile_1, pos2);
-	//		canvasBd.copyPixels(scaledBmpData, resizedRect, pos);
-			tiledMap.draw(canvasBd, new Point(0, 0));
-		}
-		
-		/**
-		 * Scales a BitmapData to be passed
-		 * @param	srcBitmapData
-		 * @param	srcRect
-		 * @param	scaleX
-		 * @param	scaleY
-		 * @param	resizedRect
-		 * @return 	- The newly created scaled BitmapData
-		 */
-		private function getScaledBitmapData(srcBitmapData:BitmapData, srcRect:Rectangle, scaleX:Number = 1, scaleY:Number = 1, 
-		resizedRect:Rectangle = null):BitmapData
-		{
-			var tempBitmapData:BitmapData;
-			var matrix:Matrix = new Matrix();
-			
-			if (resizedRect != null)
-			{
-				
-				tempBitmapData = new BitmapData(resizedRect.width, resizedRect.height, false, 0x000000);
-				tempBitmapData.copyPixels(srcBitmapData, srcRect, new Point(0, 0));
-				matrix.scale(resizedRect.width / srcRect.width, resizedRect.height / srcRect.height);
-				tempBitmapData.draw(srcBitmapData, matrix);
-				return tempBitmapData;
-			} else {
-				tempBitmapData = new BitmapData(srcRect.width * scaleX, srcRect.height * scaleY, false, 0x000000);
-				tempBitmapData.copyPixels(srcBitmapData, srcRect, new Point(0, 0));
-				matrix.scale(scaleX, scaleY);
-				tempBitmapData.draw(srcBitmapData, matrix);
-				return tempBitmapData;
-			}
+			var mapAtlas:TextureAtlas = new TextureAtlas(Texture.fromBitmap(new TiledMapImage()), XML(new TiledMapXML()));	
+			ObjectMakerStarling.FromTiledMap(XML(new TiledMap()), mapAtlas);
 		}
 	
 	}
