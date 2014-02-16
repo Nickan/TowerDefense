@@ -6,7 +6,7 @@ package framework1_0
 	import starling.display.Image;
 	import starling.textures.Texture;
 	/**
-	 * ...
+	 * Handles the animation by giving the required parameters
 	 * @author Nickan
 	 */
 	public class Animation 
@@ -31,8 +31,7 @@ package framework1_0
 		public static const PLAYMODE_ABNORMAL:uint = 1; // This is looping :D
 		
 		public function Animation(srcBmpData:BitmapData, width:uint, height:uint, totalColumns:uint, totalFrames:uint, 
-				animationDuration:Number, playMode:uint) 
-		{
+				animationDuration:Number, playMode:uint)  {
 			this.srcBmpData = srcBmpData;
 			this.width = width;
 			this.height = height;
@@ -49,7 +48,7 @@ package framework1_0
 			setAnimationDuration(animationDuration);
 		}
 		
-		public function draw(stateTime:Number): void
+		public function update(stateTime:Number): void
 		{
 			currentStateTime = stateTime % animationDuration;
 			switch (playMode)
@@ -81,7 +80,7 @@ package framework1_0
 			image.texture = Texture.fromBitmapData(modBmpData);
 			
 			//...
-			trace("2: " + frameNumber);
+		//	trace("2: updating" + frameNumber);
 		}
 		
 		public function setAnimationDuration(animationDuration:Number): void

@@ -69,7 +69,8 @@
   </intrinsics>
   <!-- Assets to embed into the output SWF -->
   <library>
-    <asset path="assets\allgameimages.png" />
+    <asset path="assets\tiledmap.png" />
+    <asset path="assets\images.png" />
   </library>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>

@@ -3,7 +3,6 @@ package
 	import citrus.core.starling.StarlingCitrusEngine;
 	import citrus.core.starling.ViewportMode;
 	import flash.events.Event;
-	import framework1_0.Game;
 	import state.GameState;
 	
 	/**
@@ -14,7 +13,6 @@ package
 //	[SWF(width = "800", height = "600", framerate = "60", backgroundColor = "#000000")]
 	public class Main extends StarlingCitrusEngine
 	{
-		private var game:Game;
 		
 		public function Main():void 
 		{
