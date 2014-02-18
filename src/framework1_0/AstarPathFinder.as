@@ -11,25 +11,28 @@ package framework1_0
 		public var tileHeight:uint;
 		
 		/* The node maps where should the walkable and unwalkable tiles should be addressed*/
-		public var nodeMap:Array;
+		private var nodeMap:Array;
 		
 		/* Potentially to be included in the closed list */
-		public var openList:Array
+		private var openList:Array
 		
 		/* List of nodes that are having a least movement cost from the starting node to goal node */
-		public var closedList:Array;
+		private var closedList:Array;
 		
-		/* List of nodes done being analyzed for potentially the shortest path */
-		public var possibleNextNodeList:Array;
+		/* List of nodes to be ignored when pathfinding */
+		public var ignoreNodeList:Array;
+		
+		public var enableDiagonalMove:Boolean = true;
 		
 		public function AstarPathFinder(tileWidth:uint, tileHeight:uint)  {
 			this.tileWidth = tileWidth;
 			this.tileHeight = tileHeight;
 			
 			createNodeMap();
+			ignoreNodeList = new Array();
 		}
 		
-		public function createNodeMap(): void {
+		private function createNodeMap(): void {
 			nodeMap = new Array();
 			for (var height:uint = 0; height < tileHeight; ++height) {
 				nodeMap.push(new Array());
@@ -41,11 +44,10 @@ package framework1_0
 		
 		public function getShortestPath(startX:uint, startY:uint, goalX:uint, goalY:uint) : Array {
 			setHeuristics(nodeMap[goalY][goalX]);
-			nullifyParents();
-			possibleNextNodeList = new Array();			
+			nullifyParents();		
 			
 			var loop:uint = 0;
-			var loopLimit:uint = 20;
+			var loopLimit:uint = 100;
 			
 			var closedList:Array = new Array();
 			
@@ -85,7 +87,7 @@ package framework1_0
 			return trackParentNode(startX, startY, goalX, goalY);
 		}
 		
-		public function getLowestAdjacentFcostNode(node:Node, list:Array): Node {
+		private function getLowestAdjacentFcostNode(node:Node, list:Array): Node {
 			// If there is only one item in the list (more likely in the open list
 			if (list.length == 1) { return list.pop(); }
 			
@@ -110,7 +112,7 @@ package framework1_0
 		 * @param	node
 		 * @return
 		 */
-		public function getAdjacentFreeNodes(node:Node, closedList:Array): Array {
+		private function getAdjacentFreeNodes(node:Node, closedList:Array): Array {
 			var adjacentNodes:Array = new Array();
 			
 			var startX:int = node.x - 1;
@@ -130,8 +132,16 @@ package framework1_0
 						var tempNode:Node = nodeMap[startY + y][startX + x];
 						
 						// Is node free and not belong in the closed list
-						if (tempNode.type == Node.FREE && !isInArray(tempNode, closedList) ) {
-							adjacentNodes.push(tempNode);
+						if ( tempNode.type == Node.FREE &&  !isInArray(tempNode, closedList)  && !isInArray(tempNode, ignoreNodeList) ) {
+							
+							if (enableDiagonalMove) {
+								if (!isPlacedDiagonally(node, tempNode) ) {
+									adjacentNodes.push(tempNode);
+								}
+							} else {
+								adjacentNodes.push(tempNode);
+							}
+							
 						}
 					}
 					
@@ -141,7 +151,7 @@ package framework1_0
 			return adjacentNodes;
 		}
 		
-		public function isInArray(node:Node, nodeList:Array): Boolean {
+		private function isInArray(node:Node, nodeList:Array): Boolean {
 			for (var index:uint = 0; index < nodeList.length; ++index) {
 				if ( nodeList[index].same(node.x, node.y) ) {
 					return true;
@@ -155,7 +165,7 @@ package framework1_0
 		 * @param	beingCheckedNode
 		 * @param	adjacentNodes
 		 */
-		public function analyzeAdjacentNodes(beingCheckedNode:Node, adjacentNodes:Array): void {
+		private function analyzeAdjacentNodes(beingCheckedNode:Node, adjacentNodes:Array): void {
 			trace("2:adjacent list length: " + adjacentNodes.length);
 			for (var index:uint = 0; index < adjacentNodes.length; ++index) {
 				var adjNode:Node = adjacentNodes[index];
@@ -182,9 +192,20 @@ package framework1_0
 					// Cheched node and recalculate its g cost
 					g = (isPlacedDiagonally(beingCheckedNode, adjNode)) ? 14 : 10;
 					if (beingCheckedNode.g + g < adjNode.g) {
-						adjNode.g = beingCheckedNode.g + g;
-						adjNode.f = adjNode.g + adjNode.h;
-						adjNode.parentNode = beingCheckedNode;
+						
+						if (enableDiagonalMove) {
+							if (!isPlacedDiagonally(beingCheckedNode, adjNode) ) {
+								adjNode.g = beingCheckedNode.g + g;
+								adjNode.f = adjNode.g + adjNode.h;
+								adjNode.parentNode = beingCheckedNode;
+							}
+						} else {
+							adjNode.g = beingCheckedNode.g + g;
+							adjNode.f = adjNode.g + adjNode.h;
+							adjNode.parentNode = beingCheckedNode;
+						}
+						
+						
 						//...
 						trace("2:g Cost: " + adjNode.g);
 					}
@@ -195,7 +216,7 @@ package framework1_0
 			}
 		}
 		
-		public function trackParentNode(startX:uint, startY:uint, goalX:uint, goalY:uint): Array {
+		private function trackParentNode(startX:uint, startY:uint, goalX:uint, goalY:uint): Array {
 			var shortestPath:Array = new Array();
 			
 			// Add the starting node
@@ -209,6 +230,11 @@ package framework1_0
 				
 				if (parentNode != null) {
 					
+					// Don't include the starting node
+					if (parentNode.same(startX, startY)) {
+						break;
+					}
+					
 					shortestPath.push(parentNode);
 					lastNode = parentNode;
 				} else {
@@ -220,7 +246,7 @@ package framework1_0
 		}
 		
 
-		public function setHeuristics(goalNode:Node): void {
+		private function setHeuristics(goalNode:Node): void {
 			for (var y:uint = 0; y < tileHeight; ++y) {
 				for (var x:uint = 0; x < tileWidth; ++x) {
 					nodeMap[y][x].h = getHeuristic(x, y, goalNode);
@@ -228,7 +254,7 @@ package framework1_0
 			}
 		}
 		
-		public function nullifyParents(): void {
+		private function nullifyParents(): void {
 			for (var y:uint = 0; y < tileHeight; ++y) {
 				for (var x:uint = 0; x < tileWidth; ++x) {
 					nodeMap[y][x].parentNode = null;
@@ -236,7 +262,7 @@ package framework1_0
 			}
 		}
 		
-		public function getHeuristic(tileX:uint, tileY:uint, goalNode:Node): uint {
+		private function getHeuristic(tileX:uint, tileY:uint, goalNode:Node): uint {
 			return Math.abs(tileX - goalNode.x) + Math.abs(tileY - goalNode.y);
 		}
 		
@@ -246,11 +272,11 @@ package framework1_0
 		 * @param	testNode
 		 * @return
 		 */
-		public function isPlacedDiagonally(basedNode:Node, testNode:Node): Boolean {
+		private function isPlacedDiagonally(basedNode:Node, testNode:Node): Boolean {
 			return ( (basedNode.x != testNode.x) && (basedNode.y != testNode.y) ) ? true : false;
 		}
 		
-		public function clear(): void {
+		private function clear(): void {
 			for (var height:uint = 0; height < tileHeight; ++height) {
 				for (var width:uint = 0; width < tileWidth; ++width) {
 					nodeMap[height][width].type = Node.FREE;
