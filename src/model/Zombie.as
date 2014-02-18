@@ -19,32 +19,24 @@ package model
 		
 		private var aniStateTime:Number = 0;
 		
-		private var previousPos:Point = new Point();
-		private var traveledPos:Point = new Point();
-		private var movingHorizontal:Boolean = false;
-		private var movingVertical:Boolean = false;
-		
-		private var moveIndicator:Point = new Point();
-		private var speed:Number = 1.0;
-		
+		public var pathTracker:PathTracker;
 		
 		public function Zombie(animation:Animation, rect:Rectangle)  {
 			super(animation.image.texture);
 			this.animation = animation;
 			this.rect = rect;
+			pathTracker = new PathTracker(this);
 		}
 		
 		public function update(timeDelta:Number): void {
+			pathTracker.move(timeDelta);
+			
 			aniStateTime += timeDelta;
 			
 			// I don't know why the address should be updated over and over again (or I might be wrong about saying address)
 			this.texture = animation.image.texture;
 		
 			animation.update(aniStateTime);
-		}
-		
-		private function move(timeDelta:Number): void {
-			
 		}
 		
 		/**
