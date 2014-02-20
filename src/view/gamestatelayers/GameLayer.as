@@ -6,7 +6,10 @@ package view.gamestatelayers
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import framework1_0.AstarPathFinder;
+	import framework1_0.Node;
 	import model.Cannon;
+	import model.Map;
 	import model.Zombie;
 	import starling.display.Image;
 	import starling.display.Sprite;
@@ -45,10 +48,23 @@ package view.gamestatelayers
 		private var TiledMapXml:Class;
 		}
 		
+		
+		private var pathFinder:AstarPathFinder = new AstarPathFinder(48, 38);
+		private var map:Map = new Map();
+		
 		public function GameLayer()  {
 			super();
 			
 			addEventListener(Event.ADDED_TO_STAGE, onAdded);
+			
+		//	var list:Array = pathFinder.getAdjacentNodes(pathFinder.nodeMap[1][0]);
+			
+		//	for (var index:uint = 0; index < list.length; ++index) {
+		//		trace("2:" + list[index].x + ": " + list[index].y);
+		//	}
+		//	trace("2:array length: " + list.length);
+			
+		
 		}
 		
 		private function onAdded(): void {
@@ -63,14 +79,24 @@ package view.gamestatelayers
 			var zomAniBmpData:BitmapData = new BitmapData(480, 32); 
 			zomAniBmpData.copyPixels(allBmp.bitmapData, aniRect, new Point());
 			
-			zombie = Zombie.newInstance(zomAniBmpData, new Rectangle(5, 5, 32, 32));
+			zombie = Zombie.newInstance(zomAniBmpData, new Rectangle(6, 15, 32, 32));
 			
 			addChild(cannon);
-			addChild(zombie);
+		//	addChild(zombie);
+			addChild(zombie.animation.image);
+			
+			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
+			var list:Array = pathFinder.getShortestPath(6, 15, 0, 8);
+			
+			for (var index:uint = 0; index < list.length; ++index) {
+				trace("2:path: " + list[index].x + ": " + list[index].y);
+			}
+			
+			zombie.pathTracker.trackPathList(list);
 			
 			//...
-			trace("2: " + zombie.x);
-			trace("2: " + zombie.y);
+		//	trace("2: " + zombie.x);
+		//	trace("2: " + zombie.y);
 		}
 		
 		private function initializeBackground(): void {
@@ -80,6 +106,9 @@ package view.gamestatelayers
 		
 		public function update(timeDelta:Number): void {
 			zombie.update(timeDelta);
+		//	zombie.animation.image.rotation += timeDelta * 10;
+			
+		//	trace("2:rotation: " + zombie.animation.image.rotation);
 		}
 		
 	}
