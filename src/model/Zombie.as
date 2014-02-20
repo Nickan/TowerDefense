@@ -11,7 +11,7 @@ package model
 	 * Should only know how to track the target area
 	 * @author Nickan
 	 */
-	public class Zombie extends Image{
+	public class Zombie {
 		public var animation:Animation;
 		
 		public var position:Point;
@@ -21,8 +21,10 @@ package model
 		
 		public var pathTracker:PathTracker;
 		
+		public var x:Number;
+		public var y:Number;
+		
 		public function Zombie(animation:Animation, rect:Rectangle)  {
-			super(animation.image.texture);
 			this.animation = animation;
 			this.rect = rect;
 			pathTracker = new PathTracker(this);
@@ -32,11 +34,18 @@ package model
 			pathTracker.move(timeDelta);
 			
 			aniStateTime += timeDelta;
-			
-			// I don't know why the address should be updated over and over again (or I might be wrong about saying address)
-			this.texture = animation.image.texture;
 		
+			updateAnimationPosition();
 			animation.update(aniStateTime);
+		}
+		
+		private function updateAnimationPosition(): void {
+			animation.image.x = x + 16;
+			animation.image.y = y + 16;
+		}
+		
+		public function setRotation(rotation:Number): void {
+			animation.image.rotation = animation.image.rotation + 2;
 		}
 		
 		/**
@@ -56,8 +65,9 @@ package model
 			image.pivotY = image.height / 2;
 			
 			// Position the zombie at the center of the tile
-			zombie.x = (rect.x * 32) + 16 - image.pivotX;
-			zombie.y = (rect.y * 32) + 16 - image.pivotY;
+			zombie.x = (rect.x * 32);
+			zombie.y = (rect.y * 32);
+			
 			return zombie;
 		}
 		
