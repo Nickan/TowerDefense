@@ -22,7 +22,7 @@ package framework1_0
 		/* List of nodes to be ignored when pathfinding */
 		public var ignoreNodeList:Array;
 		
-		public var enableDiagonalMove:Boolean = true;
+		public var enableDiagonalMove:Boolean = false;
 		
 		public function AstarPathFinder(tileWidth:uint, tileHeight:uint)  {
 			this.tileWidth = tileWidth;
@@ -47,7 +47,7 @@ package framework1_0
 			nullifyParents();		
 			
 			var loop:uint = 0;
-			var loopLimit:uint = 100;
+			var loopLimit:uint = 300;
 			
 			var closedList:Array = new Array();
 			
@@ -66,16 +66,20 @@ package framework1_0
 				analyzeAdjacentNodes(beingCheckedNode, adjacentNodes);
 				
 				// Get the next next that has the lowest f cost from the adjacent nodes
-				var nextCheckNode:Node = getLowestAdjacentFcostNode(beingCheckedNode, adjacentNodes);
+				var nextCheckNode:Node = getLowestFcostNode(openList);
 				
-				beingCheckedNode = nextCheckNode;
-				//...
-			//	trace("2:" + nextCheckNode.x + ": " + nextCheckNode.y);
-				
+				for (var i:uint = 0; i < openList.length; ++i) {
+					if (nextCheckNode.same(openList[i].x, openList[i].y) ) {
+						openList.splice(i, 1);
+					}
+				}
+
 				if (nextCheckNode.same(goalX, goalY)) {
 					trace("2:found! "  + loop);
 					break;
 				}
+				
+				beingCheckedNode = nextCheckNode;
 				
 				++loop;
 				if (loop > loopLimit) {
@@ -87,9 +91,9 @@ package framework1_0
 			return trackParentNode(startX, startY, goalX, goalY);
 		}
 		
-		private function getLowestAdjacentFcostNode(node:Node, list:Array): Node {
+		private function getLowestFcostNode(list:Array): Node {
 			// If there is only one item in the list (more likely in the open list
-			if (list.length == 1) { return list.pop(); }
+		//	if (list.length == 1) { return list.pop(); }
 			
 			var fCost:uint = uint.MAX_VALUE;
 			var lowestFcostNode:Node = null;
@@ -104,6 +108,7 @@ package framework1_0
 					lowestFcostNode = tempNode;
 				}
 			}
+			
 			return lowestFcostNode;
 		}
 		
@@ -135,11 +140,11 @@ package framework1_0
 						if ( tempNode.type == Node.FREE &&  !isInArray(tempNode, closedList)  && !isInArray(tempNode, ignoreNodeList) ) {
 							
 							if (enableDiagonalMove) {
+								adjacentNodes.push(tempNode);
+							} else {
 								if (!isPlacedDiagonally(node, tempNode) ) {
 									adjacentNodes.push(tempNode);
 								}
-							} else {
-								adjacentNodes.push(tempNode);
 							}
 							
 						}
@@ -166,7 +171,6 @@ package framework1_0
 		 * @param	adjacentNodes
 		 */
 		private function analyzeAdjacentNodes(beingCheckedNode:Node, adjacentNodes:Array): void {
-			trace("2:adjacent list length: " + adjacentNodes.length);
 			for (var index:uint = 0; index < adjacentNodes.length; ++index) {
 				var adjNode:Node = adjacentNodes[index];
 				
@@ -174,7 +178,8 @@ package framework1_0
 				// The node is not in the open list, set their f cost. Cost of h will be plus 14 if diagonally placed to the
 				// being checked node, plus 10 to vertically and horizontally placed
 				if (!isInArray(adjNode, openList) ) {
-					openList.push(adjNode);
+					openList.push(nodeMap[adjNode.y][adjNode.x]);
+
 					// Set their parent node
 					adjNode.parentNode = beingCheckedNode
 					
@@ -183,9 +188,6 @@ package framework1_0
 					g = (isPlacedDiagonally(beingCheckedNode, adjNode)) ? 14 : 10;
 					adjNode.g = g + beingCheckedNode.g;
 					adjNode.f = adjNode.g + adjNode.h;
-					
-					//...
-					trace("2:free list: " + adjNode.x + ": " + adjNode.y + ": " + adjNode.f + " heuristic: " + adjNode.h);
 				} else {
 					// The tempNode is in the open list, check if the g cost to move to the tempNode from the being checked node
 					// is lower than the tempNode's current g cost from the starting node, then change its parent to the being
@@ -204,14 +206,7 @@ package framework1_0
 							adjNode.f = adjNode.g + adjNode.h;
 							adjNode.parentNode = beingCheckedNode;
 						}
-						
-						
-						//...
-						trace("2:g Cost: " + adjNode.g);
 					}
-					
-					//...
-					trace("2:open list: " + adjNode.x + ": " + adjNode.y + ": " + adjNode.f + " heuristic: " + adjNode.h);
 				}
 			}
 		}
