@@ -24,6 +24,15 @@ package model
 		public var x:Number;
 		public var y:Number;
 		
+		public var life:int = 100;
+		
+		public var speed:Number = 16;
+		
+		/**
+		 * Don't use this to instantiate a new zombie, use newInstance() instead
+		 * @param	animation
+		 * @param	rect
+		 */
 		public function Zombie(animation:Animation, rect:Rectangle)  {
 			this.animation = animation;
 			this.rect = rect;
@@ -34,7 +43,7 @@ package model
 			pathTracker.move(timeDelta);
 			
 			aniStateTime += timeDelta;
-		
+
 			updateAnimationPosition();
 			animation.update(aniStateTime);
 		}
@@ -42,10 +51,6 @@ package model
 		private function updateAnimationPosition(): void {
 			animation.image.x = x + 16;
 			animation.image.y = y + 16;
-		}
-		
-		public function setRotation(rotation:Number): void {
-			animation.image.rotation = animation.image.rotation + 2;
 		}
 		
 		/**

@@ -1,79 +1,67 @@
 package model 
 {
 	/**
-	 * ...
+	 * Handles a common rotation operations that I need for creating this tower defense
 	 * @author Nickan
 	 */
 	public class RotationManager {
-		public var doneRotating:Boolean;
-		public var rotationSpeed:Number = 100.0;
+		public static const RAD_TO_DEG:Number = 180 / Math.PI;
+		public static const DEG_TO_RAD:Number = Math.PI / 180;
 		
-		public function RotationManager() {
-			
-		}
+		public function RotationManager() { }
 	
 		/**
-		 * Returns a correct rotation in degrees from a given 2D vector
+		 * Returns a human readable rotation, 0 - 360 degrees
 		 * @param	x
 		 * @param	y
 		 * @return
 		 */
-		public function getCorrectRotation(x:Number, y:Number): Number {
-			var rotation:Number = 0;
-			var degToRad:Number = Math.PI / 180;
-			var radToDeg:Number = 180 / Math.PI;
+		public static function getViewRotation(x:Number, y:Number): Number {
+			var compensationRotation:Number = 0;
 			
-			var atanRotation:Number = Math.atan( y / x) * radToDeg;
+			var atanRotation:Number = Math.atan( y / x) * RAD_TO_DEG;
 			
+			// The coordinates is in the middle to the right
 			if (x >= 0) {
-				rotation = atanRotation + 180;
+				compensationRotation = 180;
+			} else {
+				// Left side
+				// Bottom
+				if (y > 0) {
+					compensationRotation = 360;
+				}
 			}
 			
-			return rotation * degToRad;
+			return (atanRotation + compensationRotation);
 		}
 		
 		/**
-		 * Returns a smooth rotation between the current rotation and target rotation (is that they called "interpolation"?). Should be passed in degrees
+		 * Returns a smooth rotation in degrees between the current rotation and target rotation (is that they called "interpolation"?)
 		 * @param	currentRotation
 		 * @param	targetRotation
 		 * @param	timeDelta
 		 * @return
 		 */
-		public function getSmoothRotation(currentRotation:Number, targetRotation:Number, timeDelta:Number): Number {
-			var radToDeg:Number = 180 / Math.PI;
-			var degToRad:Number = Math.PI / 180;
+		public static function getSmoothRotation(currentRotation:Number, targetRotation:Number, rotationSpeed:Number): Number {
+			var tempRotation:Number = 0;
 			
-			var incRotation:Number = rotationSpeed * timeDelta;
-			
-			var degCurrentRotation:Number = currentRotation * radToDeg;
-			var degTargetRotation:Number = targetRotation * radToDeg;
-			
-			// Adjustment needed to visualize the rotation in my mind, as I think of rotation 0 to 360 degrees
-			// So if the current rotation is negative, most likely the past 180 degrees will be -179 degrees until 0, just add
-			// 360 degrees. 181 = -179 + 360, so on and so forth
-			if (degCurrentRotation < 0) {
-				degCurrentRotation = degCurrentRotation + 360;
-			}
-			
-			///
-//			trace("2: current rotation: " + degCurrentRotation + " target rotation: " + degTargetRotation);
-			
-			// See if there is needed smoothing to get target rotation
-			
-			var diffRotation:Number = degTargetRotation - degCurrentRotation;
-			if (Math.abs(diffRotation) < incRotation) {
+			// See if there is needed smoothing to get target rotation			
+			var diffRotation:Number = targetRotation - currentRotation;
+			if (Math.abs(diffRotation) < rotationSpeed) {
 				return targetRotation;
 			} else {
 				
 				// The current rotation is lower than the target rotation
-				if (degCurrentRotation < degTargetRotation) {
+				if (currentRotation < targetRotation) {
 					
 					// The difference between is lower than 180
 					if (diffRotation <= 180) {
-						return (degCurrentRotation + incRotation) * degToRad;
+						
+						return (currentRotation += rotationSpeed);
 					} else {
 						// Higher
-						return (degCurrentRotation - incRotation) * degToRad;
+						
+						return (currentRotation -= rotationSpeed);
 					}
 					
 				} else {
@@ -81,16 +69,29 @@ package model
 					// The current rotation is higher than the target rotation
 					// The difference between is lower than 180
 					if ( Math.abs(diffRotation) <= 180) {
-						return (degCurrentRotation - incRotation) * degToRad;
+						return currentRotation -= rotationSpeed;
 					} else {
 						// Higher
-						return (degCurrentRotation + incRotation) * degToRad;
+						return (currentRotation += rotationSpeed);
 					}
 				}
 				
 			}
 		}
 		
+		/**
+		 * Returns a rotation easily for human to visualize. After 180, the Math.atan() produces - 179, 
+		 * so adding 360 will likely to make it readable
+		 * @param	atanRadRotation
+		 * @return
+		 */
+		public static function getDegreeRotation(atanRadRotation:Number): Number {
+			var rotation:Number = atanRadRotation * RAD_TO_DEG;
+			if (rotation < 0) {
+				rotation = rotation + 360;
+			}
+			return rotation;
+		}
 	}
 
 }

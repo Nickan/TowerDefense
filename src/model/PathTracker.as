@@ -18,22 +18,19 @@ package model
 		private var movingX:Boolean = false;
 		private var movingY:Boolean = false;
 		
-		private var speed:Number = 32;
-		
 		private var currentPoint:Point;
 		private var pixelUnit:uint = 32;
 		
-		private var rotationManager:RotationManager;
+		private var rotationSpeed:Number = 100;
 		
 		public function PathTracker(zombie:Zombie)  {
 			this.zombie = zombie;
 			this.currentPoint = new Point(zombie.x, zombie.y);
-			this.rotationManager = new RotationManager();
 		}
 		
 		public function move(timeDelta:Number): void {
-			zombie.x += moveIndicator.x * (speed * timeDelta);
-			zombie.y += moveIndicator.y * (speed * timeDelta);
+			zombie.x += moveIndicator.x * (zombie.speed * timeDelta);
+			zombie.y += moveIndicator.y * (zombie.speed * timeDelta);
 			
 			// Stop moving x when one unit is reached
 			if ( Math.abs(zombie.x - currentPoint.x) >= pixelUnit) {
@@ -51,54 +48,21 @@ package model
 				if (pathList != null) {
 					if (pathList.length > 0) {
 						setMovement();
-					//	rotate();
 					}
 				}
 			}
-			rotate();
 			
-			var rotation:Number = zombie.animation.image.rotation;
-			zombie.animation.image.rotation = rotationManager.getSmoothRotation(rotation, 
-									rotationManager.getCorrectRotation(moveIndicator.x, moveIndicator.y), timeDelta);
-			
-		
-			var radToDeg:Number = 180 / Math.PI;
-			var degToRad:Number = Math.PI / 180;
-		//	zombie.animation.image.rotation =  degToRad * 270;
-			//...
-			trace("2:rotation: " + zombie.animation.image.rotation * radToDeg );
-		//	trace("2:rotation: " + rotation);
-		
-			
+			var currentRotation:Number = RotationManager.getDegreeRotation(zombie.animation.image.rotation);
+			var targetRotation:Number = RotationManager.getViewRotation(moveIndicator.x, moveIndicator.y);
+			zombie.animation.image.rotation = RotationManager.getSmoothRotation(currentRotation, targetRotation, 
+																	rotationSpeed * timeDelta) * RotationManager.DEG_TO_RAD;
 		}
 		
 		public function trackPathList(pathList:Array): void {
 			this.pathList = pathList;
 			setMovement();
 		}
-		
-		
-		private var rot:Number = 0;
-		private function rotate(): void {
-			var rotationAdjustment:Number = 0;
-			var degToRad:Number = Math.PI / 180;
-			if (moveIndicator.x > 0) {
-				rotationAdjustment = degToRad * 180;
-			}
-			
-			//zombie.animation.image.rotation = Math.atan( -moveIndicator.y / moveIndicator.x) + rotationAdjustment;
-			
-		//	zombie.animation.image.rotation = rotationManager.getCorrectRotation(moveIndicator.x, moveIndicator.y) * degToRad;
-			
-			var radToDeg:Number = 180 / Math.PI;
-			++rot;
-			
-		//	trace("2: rotation: " + zombie.animation.image.rotation * radToDeg);
-		//	trace("2: rotation: " + rot);
-		//	var rotation = zombie.animation.image.rotation;
-		//	rotation = rotationManager.getAtanSmoothRotation(rotation, rotationManager.getCorrectRotation(moveIndicator.x, moveIndicator.y), timeDelta);
-		}
-		
+
 		private function setMovement(): void {
 			currentPoint.x = zombie.x;
 			currentPoint.y = zombie.y;
