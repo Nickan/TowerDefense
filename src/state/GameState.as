@@ -1,9 +1,6 @@
 package state 
 {
 	import citrus.core.starling.StarlingState;
-	import flash.display.BitmapData;
-	import starling.textures.Texture;
-	import starling.textures.TextureAtlas;
 	import view.gamestatelayers.GameLayer;
 	
 	/**
@@ -16,12 +13,11 @@ package state
 		
 		public function GameState() {
 			super();
-			gameLayer = new GameLayer();
 		}
 		
-		override public function initialize():void
-		{
+		override public function initialize():void {
 			super.initialize();
+			gameLayer = new GameLayer(camera);
 			addChild(gameLayer);
 		}
 		

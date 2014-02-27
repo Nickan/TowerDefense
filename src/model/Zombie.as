@@ -12,70 +12,45 @@ package model
 	 * @author Nickan
 	 */
 	public class Zombie {
-		public var animation:Animation;
-		
-		public var position:Point;
-		public var rect:Rectangle;
-		
 		private var aniStateTime:Number = 0;
 		
 		public var pathTracker:PathTracker;
 		
-		public var x:Number;
-		public var y:Number;
-		
 		public var life:int = 100;
 		
 		public var speed:Number = 16;
+		
+		public var x:Number;
+		public var y:Number;
+		public var width:uint;
+		public var height:uint;
+		
+		public var animation:Animation;
 		
 		/**
 		 * Don't use this to instantiate a new zombie, use newInstance() instead
 		 * @param	animation
 		 * @param	rect
 		 */
-		public function Zombie(animation:Animation, rect:Rectangle)  {
-			this.animation = animation;
-			this.rect = rect;
+		public function Zombie(srcBmpData:BitmapData, width:uint, height:uint, totalColumns:uint, totalFrames:uint, 
+				duration:Number, playMode:uint) {
+			this.width = width;
+			this.height = height;
+			animation = new Animation(srcBmpData, width, height, totalColumns, totalFrames, duration, playMode);
+			
 			pathTracker = new PathTracker(this);
 		}
 		
 		public function update(timeDelta:Number): void {
 			pathTracker.move(timeDelta);
-			
 			aniStateTime += timeDelta;
 
-			updateAnimationPosition();
-			animation.update(aniStateTime);
+			animation.update(x + width / 2, y + height / 2, aniStateTime);
 		}
 		
-		private function updateAnimationPosition(): void {
-			animation.image.x = x + 16;
-			animation.image.y = y + 16;
+		public function getImage():Image {
+			return animation.image;
 		}
-		
-		/**
-		 * Creates a new instance of the zombie
-		 * @param	srcBmpData
-		 * @param	bounds
-		 * @return
-		 */
-		public static function newInstance(srcBmpData:BitmapData, rect:Rectangle): Zombie {
-			var animation:Animation = new Animation(srcBmpData, rect.width, rect.height, 15, 15, 1, Animation.PLAYMODE_ABNORMAL);
-			
-			var zombie:Zombie = new Zombie(animation, rect);
-			
-			// Sets the rotation in the center of the imagevar image:Image = animation.image;
-			var image:Image = animation.image;
-			image.pivotX = image.width / 2;
-			image.pivotY = image.height / 2;
-			
-			// Position the zombie at the center of the tile
-			zombie.x = (rect.x * 32);
-			zombie.y = (rect.y * 32);
-			
-			return zombie;
-		}
-		
 	}
 
 }

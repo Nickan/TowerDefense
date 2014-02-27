@@ -1,6 +1,7 @@
 package model 
 {
 	import flash.geom.Point;
+	import framework1_0.RotationManager;
 	import starling.display.Image;
 	import starling.textures.Texture;
 	
@@ -12,9 +13,12 @@ package model
 		public var vector:Point = new Point();
 		public var speed:Number = 128;
 		
-		public var fired:Boolean = false;
+		public var update:Boolean = false;
 		public var needToBeAddedOnScreen:Boolean = false;
 		public var needToBeRemovedOnScreen:Boolean = false;
+		
+		public var targetX:Number;
+		public var targetY:Number;
 		
 		public function Bullet(texture:Texture, x:Number = 0, y:Number = 0) {
 			super(texture);
@@ -24,10 +28,20 @@ package model
 			this.pivotY = height / 2;
 		}
 		
-		public function targetHit(targetX:Number, targetY:Number, targetWidth:Number, targetHeight:Number, timeDelta:Number): Boolean {
+		/**
+		 * Checks if the target has been hit, I might removed the targetWidth and height if needed
+		 * @param	targetWidth
+		 * @param	targetHeight
+		 * @param	timeDelta
+		 * @return
+		 */
+		public function targetHit(targetWidth:Number, targetHeight:Number, timeDelta:Number): Boolean {
 			// Get the normal vector between the target and this bullet
 			vector.x = x - targetX;
 			vector.y = y - targetY;
+			
+			//...
+		//	trace("2:pos: " + x + ": " + y);
 			
 			// If the length of the distance betweem the target(zombie) and the bullet is lower than the half of the width
 			// or height of the target, then it already hit the zombie. No point of updating anything
@@ -40,10 +54,7 @@ package model
 			this.x -= vector.x * speed * timeDelta;
 			this.y -= vector.y * speed * timeDelta;
 			
-			var viewRotation:Number = RotationManager.getViewRotation(vector.x, vector.y);
-			rotation = RotationManager.getSmoothRotation(RotationManager.getDegreeRotation(rotation), 
-									viewRotation, timeDelta);
-									
+			rotation = RotationManager.getViewRotation(vector.x, vector.y) * RotationManager.DEG_TO_RAD;
 			return false;
 		}
 		

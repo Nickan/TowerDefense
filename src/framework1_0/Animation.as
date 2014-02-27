@@ -24,8 +24,8 @@ package framework1_0
 		private var currentStateTime:Number;
 		private var playMode:uint;
 		
-		private var width:uint;
-		private var height:uint;
+		public var width:uint;
+		public var height:uint;
 		
 		public static const PLAYMODE_NORMAL:uint = 0;
 		public static const PLAYMODE_ABNORMAL:uint = 1; // This is looping :D
@@ -41,6 +41,9 @@ package framework1_0
 			modBmpData.copyPixels(srcBmpData, drawRect, defaultPoint);
 			
 			this.image = new Image(Texture.fromBitmapData(modBmpData));
+			image.pivotX = width / 2;
+			image.pivotY = height / 2;
+			
 			this.totalColumns = totalColumns;
 			this.totalFrames = totalFrames;
 			this.playMode = playMode;
@@ -48,8 +51,7 @@ package framework1_0
 			setAnimationDuration(animationDuration);
 		}
 		
-		public function update(stateTime:Number): void
-		{
+		public function update(x:Number, y:Number, stateTime:Number): void {
 			currentStateTime = stateTime % animationDuration;
 			switch (playMode)
 			{
@@ -78,13 +80,12 @@ package framework1_0
 			modBmpData.copyPixels(srcBmpData, drawRect, defaultPoint);
 			
 			image.texture = Texture.fromBitmapData(modBmpData);
-			
-			//...
-		//	trace("2: updating" + frameNumber);
+			image.x = x;
+			image.y = y;
+
 		}
 		
-		public function setAnimationDuration(animationDuration:Number): void
-		{
+		public function setAnimationDuration(animationDuration:Number): void {
 			this.animationDuration = animationDuration;
 			perFrameDuration = animationDuration / totalFrames;
 		}

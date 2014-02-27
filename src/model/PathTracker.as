@@ -2,6 +2,7 @@ package model
 {
 	import flash.geom.Point;
 	import framework1_0.Node;
+	import framework1_0.RotationManager;
 	
 	/**
 	 * ...

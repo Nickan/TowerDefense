@@ -2,6 +2,7 @@ package model
 {
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import framework1_0.RotationManager;
 	import starling.display.Image;
 	import starling.textures.Texture;
 	/**
@@ -12,19 +13,26 @@ package model
 		public var attack:uint = 10;
 		public var attackDelay:Number = 1.0;
 		public var attackTimer:Number = 0.0;
-		public var range:uint = 1000;
+		public var range:uint = 64;
 		
 		public var targetZombie:Zombie = null;
 		
 		public var bullets:Array;
-		public var rotManager:RotationManager = new RotationManager();
 		
 		public var rotationSpeed:Number = 100.0;
 		
-		public function Cannon(texture:Texture, bullets:Array)  {
+		
+		private static var distX:Number;
+		private static var distY:Number;
+		private static var distSqr:Number;
+		private static var normalizer:Point = new Point();
+		
+		public function Cannon(texture:Texture, bullets:Array, x:uint, y:uint)  {
 			super(texture);
 			pivotX = width / 2;
 			pivotY = height / 2;
+			this.x = x;
+			this.y = y;
 			this.bullets = bullets;
 		}
 		
@@ -43,19 +51,10 @@ package model
 			}
 			
 			for (var index:uint = 0; index < bullets.length; ++index) {
-				var tempBullet:Bullet = bullets[index];
+				var bullet:Bullet = bullets[index];
 				
-				if (tempBullet.fired) {
-					if (tempBullet.targetHit(targetZombie.x + 16, targetZombie.y + 16, 
-						targetZombie.rect.width, targetZombie.rect.height, timeDelta)) {
-							//...
-							trace("2:target hit!!!");
-							tempBullet.fired = false;
-							tempBullet.needToBeRemovedOnScreen = true;
-					}
-					
-					//...
-				//	trace("2:tracing target" + tempBullet.x + ": " + tempBullet.y);
+				if (bullet.update) {
+					bulletUpdate(bullet, timeDelta);
 				}
 			}
 			
@@ -64,20 +63,63 @@ package model
 		/**
 		 * Sets an available bullet to be fired
 		 */
-		private function fireBullet(): void {
+		private function fireBullet():void {
 			// Just one bullet for now
 			for (var index:uint = 0; index < bullets.length; ++index) {
 				var bullet:Bullet = bullets[index];
-				if (bullet.fired == false) {
-					bullet.fired = true;
-					bullet.x = this.x;
-					bullet.y = this.y;
+				if (!bullet.update) {
+					bullet.update = true;
+					
+					// Place the starting position of the bullet just above the turret
+					distX = targetZombie.x + targetZombie.width / 2 - x;
+					distY = targetZombie.y + targetZombie.height / 2 - y;
+					
+					// Normalize it...
+					normalizer.x = distX;
+					normalizer.y = distY;
+					normalizer.normalize(1);
+					var distFromTurret:Number = 10.0;
+					bullet.x = this.x + (normalizer.x * distFromTurret);
+					bullet.y = this.y + (normalizer.y * distFromTurret);
+					
+					bullet.targetX = targetZombie.x + targetZombie.width / 2;
+					bullet.targetY = targetZombie.y + targetZombie.height / 2;
+					
 					bullet.needToBeAddedOnScreen = true;
+					bulletFired(bullet);
 					break;
 				}
 			}
 			
-		}	
+		}
+		
+		/**
+		 * Called when the bullet is just set to be released
+		 * @param	bullet
+		 */
+		protected function bulletFired(bullet:Bullet):void {
+			//...
+		//	trace("2:bullet fired: " + bullet.x + ": " + bullet.y);
+		}
+		
+		
+		/**
+		 * Updates the bullet being fired
+		 * @param	bullet
+		 * @param	timeDelta
+		 */
+		protected function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
+			if (bullet.targetHit(targetZombie.width, targetZombie.height, timeDelta)) {
+				bullet.needToBeRemovedOnScreen = true;
+				bullet.update = false;
+			} else {
+				bullet.targetX = targetZombie.x + targetZombie.width / 2;
+				bullet.targetY = targetZombie.y + targetZombie.height / 2;
+				//...
+			//	trace("2:pos: " + bullet.x + ": " + bullet.y);
+			}
+		}
+		
 		
 		/**
 		 * Returns true if the turret is already straightly viewing the target
@@ -86,9 +128,9 @@ package model
 		 */
 		private function turretLocked(timeDelta:Number): Boolean {
 			// Need to be normalized?
-			var vectorX:Number = targetZombie.x + 16 - x;
-			var vectorY:Number = targetZombie.y + 16 - y;
-			var viewRotation:Number = RotationManager.getViewRotation(vectorX, vectorY);
+			distX = targetZombie.x + 16 - x;
+			distY = targetZombie.y + 16 - y;
+			var viewRotation:Number = RotationManager.getViewRotation(distX, distY);
 			var currentRotation:Number = RotationManager.getDegreeRotation(this.rotation);
 		
 			this.rotation = RotationManager.getSmoothRotation(currentRotation, viewRotation, rotationSpeed * timeDelta) * 
@@ -97,6 +139,18 @@ package model
 			var rotDifference:Number = Math.abs(viewRotation - currentRotation);
 			
 			return (rotDifference < rotationSpeed * timeDelta) ? true : false;
+		}
+		
+		public function isInRange(zombie:Zombie): Boolean {
+			distX = (zombie.x + zombie.width / 2) - x;
+			distY = (zombie.y + zombie.height / 2) - y;
+			distSqr = distX * distX + distY * distY;
+			
+			//...
+		//	trace("2:range: " + Math.sqrt(distSqr) + " zomPos: " + (zombie.x + zombie.width / 2) + " :" + (zombie.y + zombie.height / 2) );
+		//	trace("2:cannon: " + x + ": " + y);
+			
+			return (distSqr < range * range) ? true : false;
 		}
 		
 		public function setPosition(x:uint, y:uint):void {
