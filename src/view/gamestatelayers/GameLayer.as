@@ -11,9 +11,11 @@ package view.gamestatelayers
 	import framework1_0.AstarPathFinder;
 	import framework1_0.Circle;
 	import framework1_0.Node;
+	import framework1_0.RotationManager;
 	import model.Bullet;
 	import model.Cannon;
 	import model.Map;
+	import model.PurchasePanel;
 	import model.Zombie;
 	import starling.display.Image;
 	import starling.display.Sprite;
@@ -40,7 +42,7 @@ package view.gamestatelayers
 	
 		private var textureAtlas:TextureAtlas;
 		
-		[Embed(source="../../../assets/allgameimages.png")]
+		[Embed(source="../../../assets/allanimations.png")]
 		private var AllBmp:Class;
 		private var allBmp:Bitmap = new AllBmp();
 		
@@ -65,6 +67,9 @@ package view.gamestatelayers
 		
 		private var rangeIndicator:Circle;
 		
+		public var purchasePanel:PurchasePanel;
+		public var purchasePanelPos:Point = new Point(320, 480)
+		
 		public function GameLayer(camera:StarlingCamera)  {
 			super();
 			this.camera = camera;
@@ -76,23 +81,42 @@ package view.gamestatelayers
 			initializeBackground();
 			initializeRangeIndicator();
 			
-			bitmapAtlas = new BitmapAtlas();
-			textureAtlas = new TextureAtlas(Texture.fromBitmap(new BitmapAtlas()), XML(new BitmapAtlasXml()));
+			bitmapAtlas = new BitmapAtlas()
+			
+			textureAtlas = new TextureAtlas(Texture.fromBitmap(bitmapAtlas), XML(new BitmapAtlasXml()));
 			
 			normalCannons = new Array();
 			zombies = new Array();
 			
 			addZombie(6, 0);
-			addNormalCannon(6, 10);
 			
 			cameraPoint = new Point(400, 300);
 			camera.setUp(cameraPoint);
 			gameLayerController = new GameLayerController(this);
+			
+			purchasePanel = new PurchasePanel(textureAtlas);
+			addChild(purchasePanel);
+			purchasePanel.x = 256 - (cameraPoint.x - 400);
+			purchasePanel.y = 256 - (cameraPoint.y - 300);
 		}
 		
 		private function initializeBackground(): void {
 			var tiledMapAtlas:TextureAtlas = new TextureAtlas(Texture.fromBitmap(new TiledMapImage()), XML(new TiledMapXml()));
 			ObjectMakerStarling.FromTiledMap(XML(new TiledMapTmx()), tiledMapAtlas);
+		}
+		
+		private function initializeRangeIndicator():void {
+			rangeIndicator = new Circle(256, 256, 250, 0);
+			rangeIndicator.setOutline(0xFFFFFF, 0, 0);
+			rangeIndicator.setFill(0x00FF00, 0.1);
+			rangeIndicator.setRadius(100);
+		//	rangeIndicator.x = rangeIndicator.x - rangeIndicator.width / 2 + 16;
+		//	rangeIndicator.y = rangeIndicator.y - rangeIndicator.height / 2 + 16;
+			// Set it out of screen
+			rangeIndicator.x = -250
+			rangeIndicator.y = -250
+			
+			addChild(rangeIndicator);
 		}
 		
 		public function update(timeDelta:Number): void {
@@ -111,7 +135,11 @@ package view.gamestatelayers
 			}
 			
 			this.x = 400 - cameraPoint.x;
-			this.y = 300 - cameraPoint.y;
+			this.y = 300 - cameraPoint.y;	
+			
+			// Not scrolling
+			purchasePanel.x = purchasePanelPos.x - this.x
+			purchasePanel.y = purchasePanelPos.y - this.y
 			camera.update();
 		}
 		
@@ -152,21 +180,25 @@ package view.gamestatelayers
 		}
 		
 		
-		public function addNormalCannon(tileX:Number, tileY:Number):void {
+		public function newNormalCannon(tileX:Number, tileY:Number):Cannon {
 			var bullets:Array = new Array();
+			
+			// Three bullets for now
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			var newCannon:Cannon = new Cannon(textureAtlas.getTexture("normalcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
 			addChild(newCannon);
-			normalCannons.push(newCannon);
 			
-			//...
-			setRangeIndicator(newCannon.x, newCannon.y, newCannon.range);
+			return newCannon
+		}
+		
+		public function addNormalCannon(cannon:Cannon):void {
+			normalCannons.push(cannon)
 		}
 		
 		private function addZombie(tileX:Number, tileY:Number):void {
-			var aniRect:Rectangle = new Rectangle(0, 192, 480, 32);
+			var aniRect:Rectangle = new Rectangle(0, 128, 480, 32);
 			var zomAniBmpData:BitmapData = new BitmapData(480, 32); 
 			zomAniBmpData.copyPixels(allBmp.bitmapData, aniRect, new Point());
 			
@@ -185,18 +217,6 @@ package view.gamestatelayers
 			}
 			
 			newZombie.pathTracker.trackPathList(list);
-		}
-		
-		
-		private function initializeRangeIndicator():void {
-			rangeIndicator = new Circle(256, 256, 250, 0);
-			rangeIndicator.setOutline(0xFFFFFF, 0, 0);
-			rangeIndicator.setFill(0x00FF00, 0.1);
-			rangeIndicator.setRadius(100);
-			rangeIndicator.x = rangeIndicator.x - rangeIndicator.width / 2 + 16;
-			rangeIndicator.y = rangeIndicator.y - rangeIndicator.height / 2 + 16;
-			
-			addChild(rangeIndicator);
 		}
 		
 		public function setRangeIndicator(x:Number, y:Number, range:Number):void {

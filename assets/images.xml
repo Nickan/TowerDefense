@@ -1,12 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<TextureAtlas imagePath='images.png'>
-	<SubTexture name='icebullet' x='0' y='119' width='9' height='9'/>
-	<SubTexture name='icecannon' x='0' y='93' width='23' height='13'/>
-	<SubTexture name='icecannonsell' x='0' y='0' width='29' height='26'/>
-	<SubTexture name='normalbullet' x='18' y='119' width='8' height='5'/>
-	<SubTexture name='normalcannon' x='0' y='79' width='24' height='14'/>
-	<SubTexture name='normalcannonsell' x='0' y='26' width='27' height='27'/>
-	<SubTexture name='splashbullet' x='9' y='119' width='9' height='9'/>
-	<SubTexture name='splashcannon' x='0' y='106' width='23' height='13'/>
-	<SubTexture name='splashcannonsell' x='0' y='53' width='25' height='26'/>
+<TextureAtlas imagePath="images.png">
+	<SubTexture name="bagmoney" x="66" y="14" width="16" height="20"/>
+	<SubTexture name="button" x="28" y="99" width="25" height="26"/>
+	<SubTexture name="heart" x="66" y="35" width="13" height="15"/>
+	<SubTexture name="icebullet" x="10" y="118" width="9" height="9"/>
+	<SubTexture name="icecannon" x="59" y="66" width="23" height="13"/>
+	<SubTexture name="icecannonbroken" x="33" y="66" width="25" height="15"/>
+	<SubTexture name="normalbullet" x="54" y="115" width="8" height="5"/>
+	<SubTexture name="normalcannon" x="54" y="100" width="24" height="14"/>
+	<SubTexture name="normalcannonbroken" x="0" y="99" width="27" height="18"/>
+	<SubTexture name="panelclear" x="0" y="66" width="32" height="32"/>
+	<SubTexture name="panelcorner" x="33" y="33" width="32" height="32"/>
+	<SubTexture name="panelside" x="33" y="0" width="32" height="32"/>
+	<SubTexture name="skull" x="33" y="82" width="15" height="15"/>
+	<SubTexture name="splashbullet" x="0" y="118" width="9" height="9"/>
+	<SubTexture name="splashcannon" x="66" y="0" width="23" height="13"/>
+	<SubTexture name="splashcannonbroken" x="54" y="82" width="25" height="17"/>
+	<SubTexture name="square" x="0" y="33" width="32" height="32"/>
+	<SubTexture name="toppanel" x="0" y="0" width="32" height="32"/>
 </TextureAtlas>
