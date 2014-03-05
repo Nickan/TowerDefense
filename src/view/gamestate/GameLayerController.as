@@ -9,6 +9,7 @@ package view.gamestate
 	import starling.events.TouchEvent;
 	import starling.events.TouchPhase;
 	import starling.events.KeyboardEvent;
+	import starling.events.TouchMarker;
 	
 	/**
 	 * ...
@@ -19,15 +20,18 @@ package view.gamestate
 		private var mapScroll:Boolean = false
 		private var newCannon:Cannon = null
 		
+		private var plantCannon:Boolean = false;
+		
 		public function GameLayerController(gameLayer:GameLayer)  {
 			this.gameLayer = gameLayer;
 			
 			// Remove the delay of positioning of the camera
-			gameLayer.camera.easing.x = 1;
-			gameLayer.camera.easing.y = 1;
+			gameLayer.camera.easing.x = 1
+			gameLayer.camera.easing.y = 1
 			
-			gameLayer.stage.addEventListener(TouchEvent.TOUCH, onTouch);
+			gameLayer.stage.addEventListener(TouchEvent.TOUCH, onTouch)
 			gameLayer.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown)
+			
 		}
 		
 		private function onTouch(e:TouchEvent): void {
@@ -48,6 +52,8 @@ package view.gamestate
 			
 			if (touch.phase == TouchPhase.MOVED) {
 				touchMoved(touch)
+				//...
+				trace("2:Moving")
 			}
 			
 		}
@@ -66,8 +72,14 @@ package view.gamestate
 			if (firstRect.contains(touchX - gameLayer.purchasePanel.x, touchY - gameLayer.purchasePanel.y) ) {
 				//...
 				trace("2:First")
-				newCannon = gameLayer.newNormalCannon( (touchX - (touchX % 32)) / 32 , (touchY - (touchY % 32)) / 32 )
-				mapScroll = false
+				
+				// Don't create a new cannon if there is existing one to be planted
+				if (newCannon == null) {
+					newCannon = gameLayer.newNormalCannon( (touchX - (touchX % 32)) / 32 , (touchY - (touchY % 32)) / 32 )
+					mapScroll = false
+				} else {
+					
+				}
 				return
 			} else if (secondRect.contains(touchX - gameLayer.purchasePanel.x, touchY - gameLayer.purchasePanel.y) ) {
 				//...
@@ -95,9 +107,12 @@ package view.gamestate
 			if (firstRect.contains(touchX - gameLayer.purchasePanel.x, touchY - gameLayer.purchasePanel.y) ) {
 				//...
 				trace("2:Up")
+				return;
 			}
 			
 			if (newCannon != null) {
+				//...
+				trace("2:Planted")
 				gameLayer.addNormalCannon(newCannon)
 				newCannon = null
 			}
@@ -111,15 +126,19 @@ package view.gamestate
 				
 				// Show the place of the new cannon if the user let go of the mouse
 				if (newCannon != null) {
-					var compensationX:Number = gameLayer.x % 32
-					var compensationY:Number = gameLayer.y % 32
-					
-					newCannon.x = ((int) ( (touch.globalX - compensationX) / 32) * 32) + 16 - ((int) (gameLayer.x / 32) * 32)
-					newCannon.y = ((int) ( (touch.globalY - compensationY) / 32) * 32) + 16 - ((int) (gameLayer.y / 32) * 32)
-					
-					gameLayer.setRangeIndicator(newCannon.x, newCannon.y, newCannon.range)
+					moveCannon(touch);
 				}
 			}
+		}
+		
+		private function moveCannon(touch:Touch):void {
+			var compensationX:Number = gameLayer.x % 32
+			var compensationY:Number = gameLayer.y % 32
+					
+			newCannon.x = ((int) ( (touch.globalX - compensationX) / 32) * 32) + 16 - ((int) (gameLayer.x / 32) * 32)
+			newCannon.y = ((int) ( (touch.globalY - compensationY) / 32) * 32) + 16 - ((int) (gameLayer.y / 32) * 32)
+					
+			gameLayer.setRangeIndicator(newCannon.x, newCannon.y, newCannon.range)
 		}
 		
 		private function screenScroll(touch:Touch):void {
