@@ -3,7 +3,7 @@ package
 	import citrus.core.starling.StarlingCitrusEngine;
 	import citrus.core.starling.ViewportMode;
 	import flash.events.Event;
-	import state.GameState;
+	import view.gamestate.GameState;
 	
 	/**
 	 * ...

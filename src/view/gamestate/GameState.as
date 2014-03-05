@@ -1,7 +1,7 @@
-package state 
+package view.gamestate 
 {
 	import citrus.core.starling.StarlingState;
-	import view.gamestatelayers.GameLayer;
+	import view.gamestate.GameLayer;
 	
 	/**
 	 * ...

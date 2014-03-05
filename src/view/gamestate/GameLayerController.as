@@ -1,4 +1,4 @@
-package view.gamestatelayers 
+package view.gamestate 
 {
 	import flash.geom.Point
 	import flash.geom.Rectangle;

@@ -1,4 +1,4 @@
-package view.gamestatelayers 
+package view.gamestate 
 {
 	import citrus.utils.objectmakers.ObjectMakerStarling;
 	import citrus.view.starlingview.StarlingCamera;

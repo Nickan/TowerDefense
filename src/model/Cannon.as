@@ -141,7 +141,7 @@ package model
 			return (rotDifference < rotationSpeed * timeDelta) ? true : false;
 		}
 		
-		public function isInRange(zombie:Zombie): Boolean {
+		public function isInRange(zombie:Zombie): Boolean {			
 			distX = (zombie.x + zombie.width / 2) - x;
 			distY = (zombie.y + zombie.height / 2) - y;
 			distSqr = distX * distX + distY * distY;

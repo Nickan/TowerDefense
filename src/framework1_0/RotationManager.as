@@ -11,7 +11,7 @@ package framework1_0
 		public function RotationManager() { }
 	
 		/**
-		 * Returns a human readable rotation, 0 - 360 degrees
+		 * Returns a degrees from 0 - 360 from a passed direction vector
 		 * @param	x
 		 * @param	y
 		 * @return
@@ -43,8 +43,6 @@ package framework1_0
 		 * @return
 		 */
 		public static function getSmoothRotation(currentRotation:Number, targetRotation:Number, rotationSpeed:Number): Number {
-			var tempRotation:Number = 0;
-			
 			// See if there is needed smoothing to get target rotation			
 			var diffRotation:Number = targetRotation - currentRotation;
 			if (Math.abs(diffRotation) < rotationSpeed) {
