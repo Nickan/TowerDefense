@@ -14,8 +14,8 @@ package view.gamestate
 	import framework1_0.RotationManager;
 	import model.Bullet;
 	import model.Cannon;
+	import model.SplashCannon;
 	import model.Map;
-	import model.PurchasePanel;
 	import model.Zombie;
 	import starling.display.Image;
 	import starling.display.Sprite;
@@ -29,7 +29,9 @@ package view.gamestate
 	 * @author Nickan
 	 */
 	public class GameLayer extends Sprite {
-		public var normalCannons:Array;
+		public var normalCannons:Array
+		public var splashCannons:Array
+		public var iceCannons:Array
 		
 		private var zombies:Array;
 		
@@ -78,14 +80,16 @@ package view.gamestate
 		}
 		
 		private function onAdded(): void {
-			initializeBackground();
-			initializeRangeIndicator();
+			initializeBackground()
+			initializeRangeIndicator()
 			
 			bitmapAtlas = new BitmapAtlas()
 			
-			textureAtlas = new TextureAtlas(Texture.fromBitmap(bitmapAtlas), XML(new BitmapAtlasXml()));
+			textureAtlas = new TextureAtlas(Texture.fromBitmap(bitmapAtlas), XML(new BitmapAtlasXml()))
 			
-			normalCannons = new Array();
+			normalCannons = new Array()
+			splashCannons = new Array()
+			iceCannons = new Array()
 			zombies = new Array();
 			
 			addZombie(6, 0);
@@ -126,7 +130,9 @@ package view.gamestate
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				var zombie:Zombie = zombies[index];
 				zombie.update(timeDelta);
-				updateNormalCannons(zombie, timeDelta);
+				updateNormalCannons(zombie, timeDelta)
+				updateSplashCannons(zombie, timeDelta)
+				updateIceCannons(zombie, timeDelta)
 				
 				
 				// Testing the range of the cannon
@@ -161,6 +167,45 @@ package view.gamestate
 				updateBulletsOnScreen(norCannon.bullets);
 			}
 		}
+		
+		private function updateSplashCannons(zombie:Zombie, timeDelta:Number):void {
+			for (var index:uint = 0; index < splashCannons.length; ++index) {
+				var splashCannon:Cannon = splashCannons[index];
+				
+				// If the cannon doesn't have a target, then check for the potential target that is in range
+				if (splashCannon.targetZombie == null) {
+					if (splashCannon.isInRange(zombie)) {
+						splashCannon.targetZombie = zombie;
+					}
+					
+					// Go to the next cannon if this operation is done
+					continue;
+				}
+
+				splashCannon.update(timeDelta);
+				updateBulletsOnScreen(splashCannon.bullets);
+			}
+		}
+		
+		private function updateIceCannons(zombie:Zombie, timeDelta:Number):void {
+			for (var index:uint = 0; index < iceCannons.length; ++index) {
+				var iceCannon:Cannon = iceCannons[index];
+				
+				// If the cannon doesn't have a target, then check for the potential target that is in range
+				if (iceCannon.targetZombie == null) {
+					if (iceCannon.isInRange(zombie)) {
+						iceCannon.targetZombie = zombie;
+					}
+					
+					// Go to the next cannon if this operation is done
+					continue;
+				}
+
+				iceCannon.update(timeDelta);
+				updateBulletsOnScreen(iceCannon.bullets);
+			}
+		}
+		
 		
 		
 		private function updateBulletsOnScreen(bullets:Array):void {
@@ -197,6 +242,53 @@ package view.gamestate
 			normalCannons.push(cannon)
 		}
 		
+		public function removeNormalCannon(cannon:Cannon):void {
+			removeChild(cannon)
+		}
+		
+		public function newSplashCannon(tileX:Number, tileY:Number):Cannon {
+			var bullets:Array = new Array();
+			
+			// Three bullets for now
+			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
+			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
+			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
+			var newCannon:Cannon = new SplashCannon(textureAtlas.getTexture("splashcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
+			addChild(newCannon);
+			
+			return newCannon
+		}
+		
+		public function addSplashCannon(cannon:Cannon):void {
+			splashCannons.push(cannon)
+		}
+		
+		public function removeSplashCannon(cannon:Cannon):void {
+			removeChild(cannon)
+		}
+		
+		public function newIceCannon(tileX:Number, tileY:Number):Cannon {
+			var bullets:Array = new Array();
+			
+			// Three bullets for now
+			bullets.push(new Bullet(textureAtlas.getTexture("icebullet")));
+			bullets.push(new Bullet(textureAtlas.getTexture("icebullet")));
+			bullets.push(new Bullet(textureAtlas.getTexture("icebullet")));
+			
+			var newCannon:Cannon = new SplashCannon(textureAtlas.getTexture("icecannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
+			addChild(newCannon);
+			
+			return newCannon
+		}
+		
+		public function addIceCannon(cannon:Cannon):void {
+			iceCannons.push(cannon)
+		}
+		
+		public function removeIceCannon(cannon:Cannon):void {
+			removeChild(cannon)
+		}
+		
 		private function addZombie(tileX:Number, tileY:Number):void {
 			var aniRect:Rectangle = new Rectangle(0, 128, 480, 32);
 			var zomAniBmpData:BitmapData = new BitmapData(480, 32); 
@@ -218,6 +310,7 @@ package view.gamestate
 			
 			newZombie.pathTracker.trackPathList(list);
 		}
+		
 		
 		public function setRangeIndicator(x:Number, y:Number, range:Number):void {
 			rangeIndicator.setRadius(range);
