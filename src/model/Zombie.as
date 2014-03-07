@@ -5,13 +5,14 @@ package model
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import framework1_0.Animation;
+	import framework1_0.finitestatemachine.BaseEntity;
 	import starling.display.Image;
 	
 	/**
 	 * Should only know how to track the target area
 	 * @author Nickan
 	 */
-	public class Zombie {
+	public class Zombie extends BaseEntity {
 		private var aniStateTime:Number = 0;
 		
 		public var pathTracker:PathTracker;
@@ -27,11 +28,6 @@ package model
 		
 		public var animation:Animation;
 		
-		/**
-		 * Don't use this to instantiate a new zombie, use newInstance() instead
-		 * @param	animation
-		 * @param	rect
-		 */
 		public function Zombie(srcBmpData:BitmapData, width:uint, height:uint, totalColumns:uint, totalFrames:uint, 
 				duration:Number, playMode:uint) {
 			this.width = width;
