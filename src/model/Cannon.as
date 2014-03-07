@@ -2,18 +2,30 @@ package model
 {
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import framework1_0.finitestatemachine.BaseEntity;
+	import framework1_0.finitestatemachine.BaseState;
+	import framework1_0.finitestatemachine.messagingsystem.Telegram;
+	import framework1_0.finitestatemachine.StateMachine;
 	import framework1_0.RotationManager;
+	import model.cannonstate.AttackState;
+	import model.cannonstate.IdleState;
 	import starling.display.Image;
 	import starling.textures.Texture;
+	
 	/**
-	 * Attacks zombie when in range
+	 * Its bullet default implementation traces the target zombie
 	 * @author Nickan
 	 */
-	public class Cannon extends Image  {
+	public class Cannon extends BaseEntity {
+		public var image:Image
+		
+		public var x:Number
+		public var y:Number
+		
 		public var attack:uint = 10;
 		public var attackDelay:Number = 1.0;
 		public var attackTimer:Number = 0.0;
-		public var range:uint = 64;
+		public var range:uint = 256;
 		
 		public var targetZombie:Zombie = null;
 		
@@ -21,49 +33,59 @@ package model
 		
 		public var rotationSpeed:Number = 100.0;
 		
+		public var bounds:Rectangle
+		
 		
 		private static var distX:Number;
 		private static var distY:Number;
 		private static var distSqr:Number;
 		private static var normalizer:Point = new Point();
 		
+		// Trying to use the FSM
+		private var stateMachine:StateMachine
+		private static var idleState:BaseState = new IdleState()
+		private static var attackState:BaseState = new AttackState()
+		
 		public function Cannon(texture:Texture, bullets:Array, x:uint, y:uint)  {
-			super(texture);
-			pivotX = width / 2;
-			pivotY = height / 2;
+			image = new Image(texture)
+			image.x = x
+			image.y = y
+			image.pivotX = image.width / 2;
+			image.pivotY = image.height / 2;
 			this.x = x;
 			this.y = y;
 			this.bullets = bullets;
+			
+			stateMachine = new StateMachine(this)
+			stateMachine.changeState(attackState)
+			
+			bounds = image.bounds
 		}
 		
 		public function update(timeDelta:Number): void {
-			// No reason to update the cannon if there is no target zombie
-			if (targetZombie == null) { return; }
+			stateMachine.update(timeDelta)
 			
-			if (turretLocked(timeDelta) ) {
-				attackTimer += timeDelta;
-				
-				if (attackTimer >= attackDelay) {
-					attackTimer -= attackDelay;
-					
-					fireBullet();
-				}
-			}
 			
-			for (var index:uint = 0; index < bullets.length; ++index) {
-				var bullet:Bullet = bullets[index];
-				
-				if (bullet.update) {
-					bulletUpdate(bullet, timeDelta);
-				}
-			}
-			
+		//	var tileWidth:uint = 32;
+		//	var tileHeight:uint = 32;
+		//	image.x = (tileWidth * x) + tileWidth / 2;
+		//	image.y = (tileHeight * y) + tileHeight / 2;
+			updateImagePosition()
+		}
+		
+		public function updateImagePosition():void {
+			image.x = x
+			image.y = y
+		}
+		
+		override public function handleTelegram(telegram:Telegram):Boolean {
+			return false
 		}
 		
 		/**
 		 * Sets an available bullet to be fired
 		 */
-		private function fireBullet():void {
+		public function fireBullet():void {
 			// Just one bullet for now
 			for (var index:uint = 0; index < bullets.length; ++index) {
 				var bullet:Bullet = bullets[index];
@@ -98,8 +120,7 @@ package model
 		 * @param	bullet
 		 */
 		protected function bulletFired(bullet:Bullet):void {
-			//...
-		//	trace("2:bullet fired: " + bullet.x + ": " + bullet.y);
+			
 		}
 		
 		
@@ -108,7 +129,7 @@ package model
 		 * @param	bullet
 		 * @param	timeDelta
 		 */
-		protected function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
+		public function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
 			if (bullet.targetHit(targetZombie.width, targetZombie.height, timeDelta)) {
 				bullet.needToBeRemovedOnScreen = true;
 				bullet.update = false;
@@ -126,14 +147,14 @@ package model
 		 * @param	timeDelta
 		 * @return
 		 */
-		private function turretLocked(timeDelta:Number): Boolean {
+		public function turretLocked(timeDelta:Number): Boolean {
 			// Need to be normalized?
 			distX = targetZombie.x + 16 - x;
 			distY = targetZombie.y + 16 - y;
 			var viewRotation:Number = RotationManager.getViewRotation(distX, distY);
-			var currentRotation:Number = RotationManager.getDegreeRotation(this.rotation);
+			var currentRotation:Number = RotationManager.getDegreeRotation(image.rotation);
 		
-			this.rotation = RotationManager.getSmoothRotation(currentRotation, viewRotation, rotationSpeed * timeDelta) * 
+			image.rotation = RotationManager.getSmoothRotation(currentRotation, viewRotation, rotationSpeed * timeDelta) * 
 														RotationManager.DEG_TO_RAD;
 			
 			var rotDifference:Number = Math.abs(viewRotation - currentRotation);
@@ -156,8 +177,10 @@ package model
 		public function setPosition(x:uint, y:uint):void {
 			var tileWidth:uint = 32;
 			var tileHeight:uint = 32;
-			this.x = (tileWidth * x) + tileWidth / 2;
-			this.y = (tileHeight * y) + tileHeight / 2;
+			image.x = (tileWidth * x) + tileWidth / 2;
+			image.y = (tileHeight * y) + tileHeight / 2;
+			this.x = x
+			this.y = y
 		}
 		
 	}
