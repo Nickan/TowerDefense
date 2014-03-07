@@ -72,6 +72,10 @@ package view.gamestate
 		public var purchasePanel:PurchasePanel;
 		public var purchasePanelPos:Point = new Point(320, 480)
 		
+		// It is CPU intensive to set the range of the circle range indicator, so if the range set is just the same as before,
+		// there is no point setting it up again
+		private var rangeIndicatorValue:Number
+		
 		public function GameLayer(camera:StarlingCamera)  {
 			super();
 			this.camera = camera;
@@ -102,6 +106,7 @@ package view.gamestate
 			addChild(purchasePanel);
 			purchasePanel.x = 256 - (cameraPoint.x - 400);
 			purchasePanel.y = 256 - (cameraPoint.y - 300);
+			
 		}
 		
 		private function initializeBackground(): void {
@@ -224,7 +229,6 @@ package view.gamestate
 			}
 		}
 		
-		
 		public function newNormalCannon(tileX:Number, tileY:Number):Cannon {
 			var bullets:Array = new Array();
 			
@@ -233,7 +237,7 @@ package view.gamestate
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			var newCannon:Cannon = new Cannon(textureAtlas.getTexture("normalcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
-			addChild(newCannon);
+			addChild(newCannon.image);
 			
 			return newCannon
 		}
@@ -243,7 +247,8 @@ package view.gamestate
 		}
 		
 		public function removeNormalCannon(cannon:Cannon):void {
-			removeChild(cannon)
+			removeChild(cannon.image)
+			removeCannonFromArray(cannon, normalCannons)
 		}
 		
 		public function newSplashCannon(tileX:Number, tileY:Number):Cannon {
@@ -254,7 +259,7 @@ package view.gamestate
 			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
 			var newCannon:Cannon = new SplashCannon(textureAtlas.getTexture("splashcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
-			addChild(newCannon);
+			addChild(newCannon.image);
 			
 			return newCannon
 		}
@@ -264,7 +269,8 @@ package view.gamestate
 		}
 		
 		public function removeSplashCannon(cannon:Cannon):void {
-			removeChild(cannon)
+			removeChild(cannon.image)
+			removeCannonFromArray(cannon, splashCannons)
 		}
 		
 		public function newIceCannon(tileX:Number, tileY:Number):Cannon {
@@ -276,7 +282,7 @@ package view.gamestate
 			bullets.push(new Bullet(textureAtlas.getTexture("icebullet")));
 			
 			var newCannon:Cannon = new SplashCannon(textureAtlas.getTexture("icecannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
-			addChild(newCannon);
+			addChild(newCannon.image);
 			
 			return newCannon
 		}
@@ -286,7 +292,8 @@ package view.gamestate
 		}
 		
 		public function removeIceCannon(cannon:Cannon):void {
-			removeChild(cannon)
+			removeChild(cannon.image)
+			removeCannonFromArray(cannon, iceCannons)
 		}
 		
 		private function addZombie(tileX:Number, tileY:Number):void {
@@ -313,11 +320,25 @@ package view.gamestate
 		
 		
 		public function setRangeIndicator(x:Number, y:Number, range:Number):void {
-			rangeIndicator.setRadius(range);
+			if (rangeIndicatorValue != range) {
+				rangeIndicator.setRadius(range)
+				rangeIndicatorValue = range
+			}
+
 			rangeIndicator.x = x - rangeIndicator.width / 2;
 			rangeIndicator.y = y - rangeIndicator.height / 2;
 		}
 		
+		
+		public function removeCannonFromArray(cannon:Cannon, cannonList:Array):Boolean {
+			for (var index:int = 0; index < cannonList.length; ++index) {
+				if (cannonList[index] == cannon) {
+					cannonList.splice(index, 1)
+					return true
+				}
+			}
+			return false
+		}
 		
 	}
 
