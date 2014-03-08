@@ -9,7 +9,7 @@ package model
 	 * @author Nickan
 	 */
 	public class PathTracker  {
-		private var pathList:Array = null;
+		private var pathList:Array
 		private var zombie:Zombie;
 		
 		private var moveIndicator:Point = new Point();
@@ -46,10 +46,8 @@ package model
 			
 			if (moveIndicator.x == 0 && moveIndicator.y == 0) {
 				
-				if (pathList != null) {
-					if (pathList.length > 0) {
-						setMovement();
-					}
+				if (pathList.length > 0) {
+					setMovement();
 				}
 			}
 			
@@ -59,8 +57,12 @@ package model
 																	rotationSpeed * timeDelta) * RotationManager.DEG_TO_RAD;
 		}
 		
+		/**
+		 * Clones the pathList given
+		 * @param	pathList
+		 */
 		public function trackPathList(pathList:Array): void {
-			this.pathList = pathList;
+			this.pathList = pathList.concat()
 			setMovement();
 		}
 

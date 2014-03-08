@@ -39,6 +39,7 @@ package view.gamestate
 		
 		private var zombies:Array;
 		
+		{ // Images
 		[Embed(source="../../../assets/images.png")]
 		private var BitmapAtlas:Class;
 		private var bitmapAtlas:Bitmap = new BitmapAtlas();
@@ -51,6 +52,7 @@ package view.gamestate
 		[Embed(source="../../../assets/allanimations.png")]
 		private var AllBmp:Class;
 		private var allBmp:Bitmap = new AllBmp();
+		}
 		
 		{	// The background
 		[Embed(source="../../../assets/tiledmap.png")]
@@ -80,6 +82,11 @@ package view.gamestate
 		// there is no point setting it up again
 		private var rangeIndicatorValue:Number
 		
+		private var zombieSpawnNumber:uint = 0
+		private var zombieSpawnLimit:uint = 50
+		private var zombieSpawnTimer:Number = 0
+		private var zombieSpawnInterval:Number = 2.0
+		
 		public function GameLayer(camera:StarlingCamera)  {
 			super();
 			this.camera = camera;
@@ -100,7 +107,11 @@ package view.gamestate
 			iceCannons = new Array()
 			zombies = new Array();
 			
-			addZombie(6, 0);
+			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
+		//	for (var num:uint = 0; num < 10; ++num) {
+				addZombie(6, 0);
+		//	}
+			
 			
 			cameraPoint = new Point(400, 300);
 			camera.setUp(cameraPoint);
@@ -133,20 +144,34 @@ package view.gamestate
 		public function update(timeDelta:Number): void {
 			if (timeDelta > 100 / 6 * 30)
 				return;
+				
+			zombieSpawnTimer += timeDelta
+			// Zombie spawn interval
+			if (zombieSpawnTimer >= zombieSpawnInterval) {
+				
+				if (zombieSpawnNumber >= zombieSpawnLimit) {
+					
+				} else {
+					addZombie(6, 0)
+					zombieSpawnTimer -= zombieSpawnInterval
+					++zombieSpawnNumber
+				}
+			}
 			
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				var zombie:Zombie = zombies[index];
 				if (zombie.life > 0) {
 				
 					zombie.update(timeDelta);
-					updateNormalCannons(zombie, timeDelta)
-					updateSplashCannons(zombie, timeDelta)
-					updateIceCannons(zombie, timeDelta)
 				} else {
 					removeZombie(zombie)
 					break;
 				}
 			}
+			
+			updateNormalCannons(timeDelta)
+			updateSplashCannons(timeDelta)
+			updateIceCannons(timeDelta)
 			
 			this.x = 400 - cameraPoint.x;
 			this.y = 300 - cameraPoint.y;	
@@ -159,30 +184,37 @@ package view.gamestate
 			MessageDispatcher.update(timeDelta)
 		}
 		
-		private function updateNormalCannons(zombie:Zombie, timeDelta:Number):void {
+		private function updateNormalCannons(timeDelta:Number):void {
 			for (var index:uint = 0; index < normalCannons.length; ++index) {
 				var norCannon:Cannon = normalCannons[index];
 				
-				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (norCannon.getTargetId() == -1) {
-					if (norCannon.isInRange(zombie.getBounds())) {
-						norCannon.setTargetId(zombie.getId())
+				for (var zomIndex:uint = 0; zomIndex < zombies.length; ++zomIndex) {
+					var zombie:Zombie = zombies[zomIndex]
+					// If the cannon doesn't have a target, then check for the potential target that is in range
+					if (norCannon.getTargetId() == -1) {
+						if (norCannon.isInRange(zombie.getBounds())) {
+							norCannon.setTargetId(zombie.getId())
+						}
 					}
 				}
+				
 
 				norCannon.update(timeDelta);
 				updateBulletsOnScreen(norCannon.bullets);
 			}
 		}
 		
-		private function updateSplashCannons(zombie:Zombie, timeDelta:Number):void {
+		private function updateSplashCannons(timeDelta:Number):void {
 			for (var index:uint = 0; index < splashCannons.length; ++index) {
 				var splashCannon:SplashCannon = splashCannons[index];
-				
-				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (splashCannon.getTargetId() == -1) {
-					if (splashCannon.isInRange(zombie.getBounds())) {
-						splashCannon.setTargetId(zombie.getId())
+
+				for (var zomIndex:uint = 0; zomIndex < zombies.length; ++zomIndex) {
+					var zombie:Zombie = zombies[zomIndex]
+					// If the cannon doesn't have a target, then check for the potential target that is in range
+					if (splashCannon.getTargetId() == -1) {
+						if (splashCannon.isInRange(zombie.getBounds())) {
+							splashCannon.setTargetId(zombie.getId())
+						}
 					}
 				}
 				
@@ -209,14 +241,17 @@ package view.gamestate
 			}
 		}
 		
-		private function updateIceCannons(zombie:Zombie, timeDelta:Number):void {
+		private function updateIceCannons(timeDelta:Number):void {
 			for (var index:uint = 0; index < iceCannons.length; ++index) {
 				var iceCannon:SplashCannon = iceCannons[index];
 				
-				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (iceCannon.getTargetId() == -1) {
-					if (iceCannon.isInRange(zombie.getBounds())) {
-						iceCannon.setTargetId(zombie.getId())
+				for (var zomIndex:uint = 0; zomIndex < zombies.length; ++zomIndex) {
+					var zombie:Zombie = zombies[zomIndex]
+					// If the cannon doesn't have a target, then check for the potential target that is in range
+					if (iceCannon.getTargetId() == -1) {
+						if (iceCannon.isInRange(zombie.getBounds())) {
+							iceCannon.setTargetId(zombie.getId())
+						}
 					}
 				}
 
@@ -225,6 +260,7 @@ package view.gamestate
 					iceBulletHitTheGround(iceCannon)
 				}
 				updateBulletsOnScreen(iceCannon.bullets);
+
 			}
 		}
 		
@@ -345,15 +381,12 @@ package view.gamestate
 			newZombie.y = tileY * 32;
 			zombies.push(newZombie);
 
-		//	addChild(newZombie.getImage());
-		//	addChild(newZombie.lifeBar)
-			
 			// To be changed later if needed
-			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
+			
 			var list:Array = pathFinder.getShortestPath(tileX, tileY, 0, 8);
 			
 			for (var index:uint = 0; index < list.length; ++index) {
-				trace("2:path: " + list[index].x + ": " + list[index].y);
+		//		trace("2:path: " + list[index].x + ": " + list[index].y);
 			}
 			
 			newZombie.pathTracker.trackPathList(list);
