@@ -4,6 +4,9 @@ package model
 	import flash.geom.Rectangle;
 	import framework1_0.finitestatemachine.BaseEntity;
 	import framework1_0.finitestatemachine.BaseState;
+	import framework1_0.finitestatemachine.EntityManager;
+	import framework1_0.finitestatemachine.messagingsystem.Message;
+	import framework1_0.finitestatemachine.messagingsystem.MessageDispatcher;
 	import framework1_0.finitestatemachine.messagingsystem.Telegram;
 	import framework1_0.finitestatemachine.StateMachine;
 	import framework1_0.RotationManager;
@@ -25,15 +28,16 @@ package model
 		public var attack:uint = 10;
 		public var attackDelay:Number = 1.0;
 		public var attackTimer:Number = 0.0;
-		public var range:uint = 256;
+		public var range:uint = 128;
 		
-		public var targetZombie:Zombie = null;
+	//	public var targetZombie:Zombie = null;
+		private var targetId:int = -1
 		
 		public var bullets:Array;
 		
 		public var rotationSpeed:Number = 100.0;
-		
-		public var bounds:Rectangle
+
+		protected var targetBounds:Rectangle = null
 		
 		
 		private static var distX:Number;
@@ -48,6 +52,7 @@ package model
 		
 		public function Cannon(texture:Texture, bullets:Array, x:uint, y:uint)  {
 			image = new Image(texture)
+			super(image.bounds)
 			image.x = x
 			image.y = y
 			image.pivotX = image.width / 2;
@@ -57,29 +62,22 @@ package model
 			this.bullets = bullets;
 			
 			stateMachine = new StateMachine(this)
-			stateMachine.changeState(attackState)
-			
-			bounds = image.bounds
+			stateMachine.changeState(idleState)
 		}
 		
 		public function update(timeDelta:Number): void {
 			stateMachine.update(timeDelta)
 			
-			
-		//	var tileWidth:uint = 32;
-		//	var tileHeight:uint = 32;
-		//	image.x = (tileWidth * x) + tileWidth / 2;
-		//	image.y = (tileHeight * y) + tileHeight / 2;
 			updateImagePosition()
 		}
 		
 		public function updateImagePosition():void {
 			image.x = x
 			image.y = y
-		}
-		
-		override public function handleTelegram(telegram:Telegram):Boolean {
-			return false
+			bounds.x = x
+			bounds.y = y
+			
+			
 		}
 		
 		/**
@@ -93,8 +91,8 @@ package model
 					bullet.update = true;
 					
 					// Place the starting position of the bullet just above the turret
-					distX = targetZombie.x + targetZombie.width / 2 - x;
-					distY = targetZombie.y + targetZombie.height / 2 - y;
+					distX = targetBounds.x + targetBounds.width / 2 - x;
+					distY = targetBounds.y + targetBounds.height / 2 - y;
 					
 					// Normalize it...
 					normalizer.x = distX;
@@ -104,8 +102,8 @@ package model
 					bullet.x = this.x + (normalizer.x * distFromTurret);
 					bullet.y = this.y + (normalizer.y * distFromTurret);
 					
-					bullet.targetX = targetZombie.x + targetZombie.width / 2;
-					bullet.targetY = targetZombie.y + targetZombie.height / 2;
+					bullet.targetX = targetBounds.x + targetBounds.width / 2;
+					bullet.targetY = targetBounds.y + targetBounds.height / 2;
 					
 					bullet.needToBeAddedOnScreen = true;
 					bulletFired(bullet);
@@ -130,18 +128,17 @@ package model
 		 * @param	timeDelta
 		 */
 		public function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
-			if (bullet.targetHit(targetZombie.width, targetZombie.height, timeDelta)) {
+			if (bullet.targetHit(targetBounds.width, targetBounds.height, timeDelta)) {
 				bullet.needToBeRemovedOnScreen = true;
 				bullet.update = false;
 			} else {
-				bullet.targetX = targetZombie.x + targetZombie.width / 2;
-				bullet.targetY = targetZombie.y + targetZombie.height / 2;
+				bullet.targetX = targetBounds.x + targetBounds.width / 2;
+				bullet.targetY = targetBounds.y + targetBounds.height / 2;
 				//...
 			//	trace("2:pos: " + bullet.x + ": " + bullet.y);
 			}
 		}
-		
-		
+
 		/**
 		 * Returns true if the turret is already straightly viewing the target
 		 * @param	timeDelta
@@ -149,8 +146,8 @@ package model
 		 */
 		public function turretLocked(timeDelta:Number): Boolean {
 			// Need to be normalized?
-			distX = targetZombie.x + 16 - x;
-			distY = targetZombie.y + 16 - y;
+			distX = targetBounds.x + 16 - x;
+			distY = targetBounds.y + 16 - y;
 			var viewRotation:Number = RotationManager.getViewRotation(distX, distY);
 			var currentRotation:Number = RotationManager.getDegreeRotation(image.rotation);
 		
@@ -162,15 +159,10 @@ package model
 			return (rotDifference < rotationSpeed * timeDelta) ? true : false;
 		}
 		
-		public function isInRange(zombie:Zombie): Boolean {			
-			distX = (zombie.x + zombie.width / 2) - x;
-			distY = (zombie.y + zombie.height / 2) - y;
+		public function isInRange(bounds:Rectangle): Boolean {			
+			distX = (bounds.x + bounds.width / 2) - x;
+			distY = (bounds.y + bounds.height / 2) - y;
 			distSqr = distX * distX + distY * distY;
-			
-			//...
-		//	trace("2:range: " + Math.sqrt(distSqr) + " zomPos: " + (zombie.x + zombie.width / 2) + " :" + (zombie.y + zombie.height / 2) );
-		//	trace("2:cannon: " + x + ": " + y);
-			
 			return (distSqr < range * range) ? true : false;
 		}
 		
@@ -182,6 +174,31 @@ package model
 			this.x = x
 			this.y = y
 		}
+		
+		public function setTargetId(targetId:int):void {
+			this.targetId = targetId
+			MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, null)
+		}
+		
+		public function getTargetId():int {
+			return targetId
+		}
+		
+		public function getTargetBounds():Rectangle {
+			return targetBounds
+		}
+		
+		override public function handleTelegram(telegram:Telegram):Boolean {
+			switch(telegram.message) {
+			case Message.TARGET_RESPONSE:
+				targetBounds = EntityManager.getEntity(telegram.senderId).getBounds()
+				stateMachine.changeState(attackState)
+				return true
+			default:
+				return false
+			}
+		}
+		
 		
 	}
 

@@ -10,6 +10,7 @@ package view.gamestate
 	import framework1_0.Animation;
 	import framework1_0.AstarPathFinder;
 	import framework1_0.Circle;
+	import framework1_0.finitestatemachine.messagingsystem.MessageDispatcher;
 	import framework1_0.Node;
 	import framework1_0.RotationManager;
 	import model.Bullet;
@@ -138,11 +139,6 @@ package view.gamestate
 				updateNormalCannons(zombie, timeDelta)
 				updateSplashCannons(zombie, timeDelta)
 				updateIceCannons(zombie, timeDelta)
-				
-				
-				// Testing the range of the cannon
-			//	normalCannons[0].isInRange(zombie);
-				
 			}
 			
 			this.x = 400 - cameraPoint.x;
@@ -152,6 +148,8 @@ package view.gamestate
 			purchasePanel.x = purchasePanelPos.x - this.x
 			purchasePanel.y = purchasePanelPos.y - this.y
 			camera.update();
+			
+			MessageDispatcher.update(timeDelta)
 		}
 		
 		private function updateNormalCannons(zombie:Zombie, timeDelta:Number):void {
@@ -159,9 +157,9 @@ package view.gamestate
 				var norCannon:Cannon = normalCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (norCannon.targetZombie == null) {
-					if (norCannon.isInRange(zombie)) {
-						norCannon.targetZombie = zombie;
+				if (norCannon.getTargetId() == -1) {
+					if (norCannon.isInRange(zombie.getBounds())) {
+						norCannon.setTargetId(zombie.getId())
 					}
 					
 					// Go to the next cannon if this operation is done
@@ -178,9 +176,9 @@ package view.gamestate
 				var splashCannon:Cannon = splashCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (splashCannon.targetZombie == null) {
-					if (splashCannon.isInRange(zombie)) {
-						splashCannon.targetZombie = zombie;
+				if (splashCannon.getTargetId() != -1) {
+					if (splashCannon.isInRange(zombie.getBounds())) {
+						splashCannon.setTargetId(zombie.getId())
 					}
 					
 					// Go to the next cannon if this operation is done
@@ -197,9 +195,9 @@ package view.gamestate
 				var iceCannon:Cannon = iceCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (iceCannon.targetZombie == null) {
-					if (iceCannon.isInRange(zombie)) {
-						iceCannon.targetZombie = zombie;
+				if (iceCannon.getTargetId() != -1) {
+					if (iceCannon.isInRange(zombie.getBounds())) {
+						iceCannon.setTargetId(zombie.getId())
 					}
 					
 					// Go to the next cannon if this operation is done

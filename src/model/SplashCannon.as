@@ -14,12 +14,12 @@ package model
 		}
 		
 		override protected function bulletFired(bullet:Bullet):void {
-			targetArea.x = targetZombie.x + targetZombie.width / 2
-			targetArea.y = targetZombie.y + targetZombie.height / 2
+			targetArea.x = targetBounds.x + targetBounds.width / 2
+			targetArea.y = targetBounds.y + targetBounds.height / 2
 		}
 		
 		override public function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
-			if (bullet.targetHit(targetZombie.width, targetZombie.height, timeDelta)) {
+			if (bullet.targetHit(targetBounds.width, targetBounds.height, timeDelta)) {
 				bullet.needToBeRemovedOnScreen = true;
 				bullet.update = false;
 			}

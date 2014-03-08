@@ -27,7 +27,7 @@ package framework1_0.finitestatemachine
 		 */
 		public static function deleteEntity(id:int):Boolean {
 			for (var index:int = 0; index < entities.length; ++index) {
-				if (entities[index].id == id) {
+				if (entities[index].getId() == id) {
 					entities.splice(index, 1)
 					return true
 				}
@@ -42,7 +42,7 @@ package framework1_0.finitestatemachine
 		 */
 		public static function getEntity(id:int):BaseEntity {
 			for (var index:int = 0; index < entities.length; ++index) {
-				if (entities[index].id == id) {
+				if (entities[index].getId() == id) {
 					return entities[index]
 				}
 			}

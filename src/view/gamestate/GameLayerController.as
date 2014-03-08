@@ -53,8 +53,6 @@ package view.gamestate
 			
 			if (touch.phase == TouchPhase.MOVED) {
 				touchMoved(touch)
-				//...
-				trace("2:Moving")
 			}
 			
 		}
@@ -145,11 +143,6 @@ package view.gamestate
 				gameLayer.removeSplashCannon(newSplashCannon)
 				newSplashCannon = null
 			} else if (newIceCannon != null) {
-				
-				if (newIceCannon == null) {
-					//....
-					trace("2: null")
-				}
 				gameLayer.removeIceCannon(newIceCannon)
 				newIceCannon = null
 			}
@@ -191,6 +184,7 @@ package view.gamestate
 					
 			cannon.x = ((int) ( (touch.globalX - compensationX) / 32) * 32) + 16 - ((int) (gameLayer.x / 32) * 32)
 			cannon.y = ((int) ( (touch.globalY - compensationY) / 32) * 32) + 16 - ((int) (gameLayer.y / 32) * 32)
+			cannon.updateImagePosition()
 					
 			gameLayer.setRangeIndicator(cannon.x, cannon.y, cannon.range)
 		}
@@ -220,7 +214,7 @@ package view.gamestate
 			for (var index:uint = 0; index < cannons.length; ++index) {
 				var tempCannon:Cannon = cannons[index];
 				
-				if (tempCannon.bounds.contains(touchX, touchY)) {
+				if (tempCannon.getBounds().contains(touchX, touchY)) {
 					return tempCannon;
 				}
 			}

@@ -19,7 +19,6 @@ package model.cannonstate
 		public function update(baseEntity:BaseEntity, timeDelta:Number):void {
 			var cannon:Cannon = (Cannon) (baseEntity)
 			
-			
 			if (cannon.turretLocked(timeDelta) ) {
 				cannon.attackTimer += timeDelta
 				
@@ -40,9 +39,6 @@ package model.cannonstate
 				
 				
 			}
-			
-			//...
-		//	trace("2:updating" + cannon.getBullets.length)
 			
 		}
 		
