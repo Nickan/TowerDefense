@@ -9,85 +9,91 @@ package framework1_0
 	 * Handles the animation by giving the required parameters
 	 * @author Nickan
 	 */
-	public class Animation 
-	{
-		private var srcBmpData:BitmapData;
-		private var modBmpData:BitmapData;
-		public var image:Image;
-		private var frameNumber:uint;
-		private var drawRect:Rectangle;
-		private static var defaultPoint:Point = new Point(0, 0);
-		private var animationDuration:Number;
-		private var perFrameDuration:Number;
-		private var totalFrames:uint;
-		private var totalColumns:uint;
-		private var currentStateTime:Number;
-		private var playMode:uint;
+	public class Animation {
+		public var image:Image
+		private var frameNumber:uint
+		private var animationDuration:Number
+		private var perFrameDuration:Number
+		private var totalFrames:uint
+		private var totalColumns:uint
+		private var currentStateTime:Number
+		private var playMode:uint
 		
-		public var width:uint;
-		public var height:uint;
+		public var width:uint
+		public var height:uint
 		
-		public static const PLAYMODE_NORMAL:uint = 0;
-		public static const PLAYMODE_ABNORMAL:uint = 1; // This is looping :D
+		private var frameTextures:Array = new Array()
+		
+		public static const PLAYMODE_NORMAL:uint = 0
+		public static const PLAYMODE_LOOP:uint = 1 // This is looping :D
 		
 		public function Animation(srcBmpData:BitmapData, width:uint, height:uint, totalColumns:uint, totalFrames:uint, 
 				animationDuration:Number, playMode:uint)  {
-			this.srcBmpData = srcBmpData;
-			this.width = width;
-			this.height = height;
-			modBmpData = new BitmapData(width, height);
+			this.width = width
+			this.height = height
+
+			this.image = new Image(Texture.fromBitmapData(new BitmapData(width, height)))
+			image.pivotX = width / 2
+			image.pivotY = height / 2
 			
-			drawRect = new Rectangle(0, 0, width, height);
-			modBmpData.copyPixels(srcBmpData, drawRect, defaultPoint);
+			this.totalColumns = totalColumns
+			this.totalFrames = totalFrames
+			this.playMode = playMode
 			
-			this.image = new Image(Texture.fromBitmapData(modBmpData));
-			image.pivotX = width / 2;
-			image.pivotY = height / 2;
+			setAnimationDuration(animationDuration)
+			createIndividualTextures(srcBmpData)
+		}
+		
+		private function createIndividualTextures(srcBmpData:BitmapData):void {
+			var modBmpData:BitmapData = new BitmapData(width, height)
+			var drawRect:Rectangle = new Rectangle(0, 0, width, height)
+			var defaultPoint:Point = new Point()
 			
-			this.totalColumns = totalColumns;
-			this.totalFrames = totalFrames;
-			this.playMode = playMode;
+			modBmpData.copyPixels(srcBmpData, drawRect, defaultPoint)
 			
-			setAnimationDuration(animationDuration);
+			for (var frameNumber:uint = 0; frameNumber < totalFrames; ++frameNumber) {
+				// Sets the rectangle to be copied from the source BitmapData
+				drawRect.x = width * (uint) (frameNumber % totalColumns)
+				drawRect.y = height * (uint) (frameNumber / totalColumns)
+				
+				// Clears the the container modified BitmapData
+				modBmpData.fillRect(modBmpData.rect, 0x000000)
+				
+				// Copy the pixels based on the calculated rect
+				modBmpData.copyPixels(srcBmpData, drawRect, defaultPoint)
+				
+				// I didn't know that fromBitmapData() creates a new instance of texture, my fault
+				var frameTexture:Texture = Texture.fromBitmapData(modBmpData)
+				frameTextures.push(frameTexture)
+			}
 		}
 		
 		public function update(x:Number, y:Number, stateTime:Number): void {
-			currentStateTime = stateTime % animationDuration;
+			currentStateTime = stateTime % animationDuration
 			switch (playMode)
 			{
 				case PLAYMODE_NORMAL:
 					if (stateTime < animationDuration) {
-						frameNumber = currentStateTime / perFrameDuration;
+						frameNumber = (uint) (currentStateTime / perFrameDuration)
 					} else {
 						// Just set to
-						frameNumber = totalFrames - 1;
+						frameNumber = totalFrames - 1
 					}
 					break;
 					// Means looping
-				case PLAYMODE_ABNORMAL:
-					frameNumber = currentStateTime / perFrameDuration;
-					break;
+				case PLAYMODE_LOOP:
+					frameNumber = (uint) (currentStateTime / perFrameDuration)
+					break
 			}
 			
-			// Sets the rectangle to be copied from the source BitmapData
-			drawRect.x = width * (uint) (frameNumber % totalColumns);
-			drawRect.y = height * (uint) (frameNumber / totalColumns);
-			
-			// Clears the the container modified BitmapData
-			modBmpData.fillRect(modBmpData.rect, 0x000000);
-			
-			// Copy the pixels based on the calculated rect
-			modBmpData.copyPixels(srcBmpData, drawRect, defaultPoint);
-			
-			image.texture = Texture.fromBitmapData(modBmpData);
-			image.x = x;
-			image.y = y;
-
+			image.texture = frameTextures[frameNumber]
+			image.x = x
+			image.y = y
 		}
 		
 		public function setAnimationDuration(animationDuration:Number): void {
-			this.animationDuration = animationDuration;
-			perFrameDuration = animationDuration / totalFrames;
+			this.animationDuration = animationDuration
+			perFrameDuration = animationDuration / totalFrames
 		}
 		
 	}

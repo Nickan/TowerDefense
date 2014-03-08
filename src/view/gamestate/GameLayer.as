@@ -340,7 +340,7 @@ package view.gamestate
 			var freezingBmpData:BitmapData = new BitmapData(480, 32)
 			freezingBmpData.copyPixels(allBmp.bitmapData, freezeRect, new Point())
 			
-			var newZombie:Zombie = new Zombie(walkingBmpData, freezingBmpData, this, 32, 32, 15, 15, 1.0, Animation.PLAYMODE_ABNORMAL);
+			var newZombie:Zombie = new Zombie(walkingBmpData, freezingBmpData, this, 32, 32, 15, 15, 1.0, Animation.PLAYMODE_LOOP);
 			newZombie.x = tileX * 32;
 			newZombie.y = tileY * 32;
 			zombies.push(newZombie);
