@@ -1,6 +1,7 @@
 package model 
 {
 	import flash.geom.Point;
+	import starling.display.Sprite;
 	import starling.textures.Texture;
 	/**
 	 * Overrides the default bullet's settings, straightly traces the target area
@@ -15,8 +16,8 @@ package model
 		// is no point of creating a separate Ice Cannon class
 		public var slowScale:Number = 0.2
 		
-		public function SplashCannon(texture:Texture, bullets:Array, x:Number, y:Number) {
-			super(texture, bullets, x, y)
+		public function SplashCannon(parentSprite:Sprite, texture:Texture, bullets:Array, x:Number, y:Number) {
+			super(parentSprite, texture, bullets, x, y)
 		}
 		
 		override protected function bulletFired(bullet:Bullet):void {
@@ -26,7 +27,7 @@ package model
 		
 		override public function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
 			if (bullet.targetHit(targetBounds.width, targetBounds.height, timeDelta)) {
-				bullet.needToBeRemovedOnScreen = true;
+				parentSprite.removeChild(bullet)
 				bullet.update = false;
 				bulletHitTheGround = true
 				targetArea.x = bullet.targetX

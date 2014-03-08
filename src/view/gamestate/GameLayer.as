@@ -200,7 +200,6 @@ package view.gamestate
 				
 
 				norCannon.update(timeDelta);
-				updateBulletsOnScreen(norCannon.bullets);
 			}
 		}
 		
@@ -222,7 +221,6 @@ package view.gamestate
 				if (splashCannon.isBulletHitTheGround()) {
 					splashBulletHitTheGround(splashCannon)
 				}
-				updateBulletsOnScreen(splashCannon.bullets);
 			}
 		}
 		
@@ -259,7 +257,6 @@ package view.gamestate
 				if (iceCannon.isBulletHitTheGround()) {
 					iceBulletHitTheGround(iceCannon)
 				}
-				updateBulletsOnScreen(iceCannon.bullets);
 
 			}
 		}
@@ -280,25 +277,6 @@ package view.gamestate
 			}
 		}
 		
-		
-		
-		private function updateBulletsOnScreen(bullets:Array):void {
-			for (var num:uint = 0; num < bullets.length; ++num) {
-				var bullet:Bullet = bullets[num];
-					
-				if (bullet.needToBeAddedOnScreen) {
-					bullet.needToBeAddedOnScreen = false;
-					addChild(bullet);
-				}
-				
-				// Also means that the bullet has hit the ground, but normal cannon also uses this
-				if (bullet.needToBeRemovedOnScreen) {
-					bullet.needToBeRemovedOnScreen = false;
-					removeChild(bullet);
-				}
-			}
-		}
-		
 		public function newNormalCannon(tileX:Number, tileY:Number):Cannon {
 			var bullets:Array = new Array();
 			
@@ -306,7 +284,7 @@ package view.gamestate
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("normalbullet")));
-			var newCannon:Cannon = new Cannon(textureAtlas.getTexture("normalcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
+			var newCannon:Cannon = new Cannon(this, textureAtlas.getTexture("normalcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
 			addChild(newCannon.image);
 			
 			return newCannon
@@ -328,7 +306,7 @@ package view.gamestate
 			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("splashbullet")));
-			var newCannon:Cannon = new SplashCannon(textureAtlas.getTexture("splashcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
+			var newCannon:Cannon = new SplashCannon(this, textureAtlas.getTexture("splashcannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
 			addChild(newCannon.image);
 			
 			return newCannon
@@ -351,7 +329,7 @@ package view.gamestate
 			bullets.push(new Bullet(textureAtlas.getTexture("icebullet")));
 			bullets.push(new Bullet(textureAtlas.getTexture("icebullet")));
 			
-			var newCannon:Cannon = new SplashCannon(textureAtlas.getTexture("icecannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
+			var newCannon:Cannon = new SplashCannon(this, textureAtlas.getTexture("icecannon"), bullets, (tileX * 32) + 16, (tileY * 32) + 16);
 			addChild(newCannon.image);
 			
 			return newCannon

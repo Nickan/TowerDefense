@@ -14,8 +14,6 @@ package model
 		public var speed:Number = 128;
 		
 		public var update:Boolean = false;
-		public var needToBeAddedOnScreen:Boolean = false;
-		public var needToBeRemovedOnScreen:Boolean = false;
 		
 		public var targetX:Number;
 		public var targetY:Number;

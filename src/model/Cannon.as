@@ -13,6 +13,7 @@ package model
 	import model.cannonstate.AttackState;
 	import model.cannonstate.IdleState;
 	import starling.display.Image;
+	import starling.display.Sprite;
 	import starling.textures.Texture;
 	
 	/**
@@ -21,6 +22,7 @@ package model
 	 */
 	public class Cannon extends BaseEntity {
 		public var image:Image
+		protected var parentSprite:Sprite
 		
 		public var x:Number
 		public var y:Number
@@ -51,7 +53,8 @@ package model
 		private static var idleState:BaseState = new IdleState()
 		private static var attackState:BaseState = new AttackState()
 		
-		public function Cannon(texture:Texture, bullets:Array, x:uint, y:uint)  {
+		public function Cannon(parentSprite:Sprite, texture:Texture, bullets:Array, x:uint, y:uint)  {
+			this.parentSprite = parentSprite
 			image = new Image(texture)
 			super(image.bounds)
 			image.x = x
@@ -90,7 +93,8 @@ package model
 				var bullet:Bullet = bullets[index];
 				if (!bullet.update) {
 					bullet.update = true;
-					bullet.needToBeAddedOnScreen = true;
+				
+					parentSprite.addChild(bullet)
 					
 					// Place the starting position of the bullet just above the turret
 					distX = targetBounds.x + targetBounds.width / 2 - x;
@@ -116,7 +120,6 @@ package model
 		 * @param	bullet
 		 */
 		protected function bulletFired(bullet:Bullet):void {
-			
 			bullet.targetX = targetBounds.x + targetBounds.width / 2;
 			bullet.targetY = targetBounds.y + targetBounds.height / 2;
 		}
@@ -129,7 +132,7 @@ package model
 		 */
 		public function bulletUpdate(bullet:Bullet, timeDelta:Number):void {
 			if (bullet.targetHit(targetBounds.width, targetBounds.height, timeDelta)) {
-				bullet.needToBeRemovedOnScreen = true;
+				parentSprite.removeChild(bullet)
 				bullet.update = false;
 				
 				MessageDispatcher.dispatchTelegram(id, targetId, Message.HIT, 0, attackDamage)
