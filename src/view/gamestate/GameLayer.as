@@ -10,6 +10,7 @@ package view.gamestate
 	import framework1_0.Animation;
 	import framework1_0.AstarPathFinder;
 	import framework1_0.Circle;
+	import framework1_0.finitestatemachine.messagingsystem.Message;
 	import framework1_0.finitestatemachine.messagingsystem.MessageDispatcher;
 	import framework1_0.Node;
 	import framework1_0.RotationManager;
@@ -30,6 +31,8 @@ package view.gamestate
 	 * @author Nickan
 	 */
 	public class GameLayer extends Sprite {
+		
+		
 		public var normalCannons:Array
 		public var splashCannons:Array
 		public var iceCannons:Array
@@ -70,7 +73,7 @@ package view.gamestate
 		
 		private var rangeIndicator:Circle;
 		
-		public var purchasePanel:PurchasePanel;
+		public var purchasePanel:PurchasePanel
 		public var purchasePanelPos:Point = new Point(320, 480)
 		
 		// It is CPU intensive to set the range of the circle range indicator, so if the range set is just the same as before,
@@ -107,7 +110,6 @@ package view.gamestate
 			addChild(purchasePanel);
 			purchasePanel.x = 256 - (cameraPoint.x - 400);
 			purchasePanel.y = 256 - (cameraPoint.y - 300);
-			
 		}
 		
 		private function initializeBackground(): void {
@@ -120,8 +122,7 @@ package view.gamestate
 			rangeIndicator.setOutline(0xFFFFFF, 0, 0);
 			rangeIndicator.setFill(0x00FF00, 0.1);
 			rangeIndicator.setRadius(100);
-		//	rangeIndicator.x = rangeIndicator.x - rangeIndicator.width / 2 + 16;
-		//	rangeIndicator.y = rangeIndicator.y - rangeIndicator.height / 2 + 16;
+			
 			// Set it out of screen
 			rangeIndicator.x = -250
 			rangeIndicator.y = -250
@@ -135,10 +136,16 @@ package view.gamestate
 			
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				var zombie:Zombie = zombies[index];
-				zombie.update(timeDelta);
-				updateNormalCannons(zombie, timeDelta)
-				updateSplashCannons(zombie, timeDelta)
-				updateIceCannons(zombie, timeDelta)
+				if (zombie.life > 0) {
+				
+					zombie.update(timeDelta);
+					updateNormalCannons(zombie, timeDelta)
+					updateSplashCannons(zombie, timeDelta)
+					updateIceCannons(zombie, timeDelta)
+				} else {
+					removeZombie(zombie)
+					break;
+				}
 			}
 			
 			this.x = 400 - cameraPoint.x;
@@ -170,7 +177,7 @@ package view.gamestate
 		
 		private function updateSplashCannons(zombie:Zombie, timeDelta:Number):void {
 			for (var index:uint = 0; index < splashCannons.length; ++index) {
-				var splashCannon:Cannon = splashCannons[index];
+				var splashCannon:SplashCannon = splashCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
 				if (splashCannon.getTargetId() == -1) {
@@ -178,15 +185,33 @@ package view.gamestate
 						splashCannon.setTargetId(zombie.getId())
 					}
 				}
-
-				splashCannon.update(timeDelta);
+				
+				splashCannon.update(timeDelta)
+				if (splashCannon.isBulletHitTheGround()) {
+					splashBulletHitTheGround(splashCannon)
+				}
 				updateBulletsOnScreen(splashCannon.bullets);
+			}
+		}
+		
+		private function splashBulletHitTheGround(splashCannon:SplashCannon):void {
+			
+			// Loop through all of the zombie, not so wise, to be changed later if I have time
+			for (var index:uint = 0; index < zombies.length; ++index) {
+				var zombie:Zombie = zombies[index]
+				var zomBounds:Rectangle = zombie.getBounds()
+				if (isInRange(splashCannon.getTargetArea().x, splashCannon.getTargetArea().y, 
+						zomBounds.x + zomBounds.width / 2, zomBounds.y + zomBounds.height / 2, splashCannon.blastRadius) ) {
+					//...
+					trace("2:Boom!")
+				}
+				
 			}
 		}
 		
 		private function updateIceCannons(zombie:Zombie, timeDelta:Number):void {
 			for (var index:uint = 0; index < iceCannons.length; ++index) {
-				var iceCannon:Cannon = iceCannons[index];
+				var iceCannon:SplashCannon = iceCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
 				if (iceCannon.getTargetId() == -1) {
@@ -196,7 +221,26 @@ package view.gamestate
 				}
 
 				iceCannon.update(timeDelta);
+				if (iceCannon.isBulletHitTheGround()) {
+					iceBulletHitTheGround(iceCannon)
+				}
 				updateBulletsOnScreen(iceCannon.bullets);
+			}
+		}
+		
+		private function iceBulletHitTheGround(splashCannon:SplashCannon):void {
+			
+			// Loop through all of the zombie, not so wise, to be changed later if I have time
+			for (var index:uint = 0; index < zombies.length; ++index) {
+				var zombie:Zombie = zombies[index]
+				var zomBounds:Rectangle = zombie.getBounds()
+				if (isInRange(splashCannon.getTargetArea().x, splashCannon.getTargetArea().y, 
+						zomBounds.x + zomBounds.width / 2, zomBounds.y + zomBounds.height / 2, splashCannon.blastRadius) ) {
+					//...
+					trace("2:Slow!")
+					MessageDispatcher.dispatchTelegram(splashCannon.getId(), zombie.getId(), Message.SLOWED, 0, splashCannon.slowScale)
+				}
+				
 			}
 		}
 		
@@ -210,7 +254,8 @@ package view.gamestate
 					bullet.needToBeAddedOnScreen = false;
 					addChild(bullet);
 				}
-					
+				
+				// Also means that the bullet has hit the ground, but normal cannon also uses this
 				if (bullet.needToBeRemovedOnScreen) {
 					bullet.needToBeRemovedOnScreen = false;
 					removeChild(bullet);
@@ -286,15 +331,22 @@ package view.gamestate
 		}
 		
 		private function addZombie(tileX:Number, tileY:Number):void {
-			var aniRect:Rectangle = new Rectangle(0, 128, 480, 32);
-			var zomAniBmpData:BitmapData = new BitmapData(480, 32); 
-			zomAniBmpData.copyPixels(allBmp.bitmapData, aniRect, new Point());
+			var aniRect:Rectangle = new Rectangle(0, 128, 480, 32)
+			var walkingBmpData:BitmapData = new BitmapData(480, 32)
+			walkingBmpData.copyPixels(allBmp.bitmapData, aniRect, new Point())
 			
-			var newZombie:Zombie = new Zombie(zomAniBmpData, 32, 32, 15, 15, 1.0, Animation.PLAYMODE_ABNORMAL);
+			// Changed to the freezing frameset
+			var freezeRect:Rectangle = new Rectangle(0, 160, 480, 32)
+			var freezingBmpData:BitmapData = new BitmapData(480, 32)
+			freezingBmpData.copyPixels(allBmp.bitmapData, freezeRect, new Point())
+			
+			var newZombie:Zombie = new Zombie(walkingBmpData, freezingBmpData, this, 32, 32, 15, 15, 1.0, Animation.PLAYMODE_ABNORMAL);
 			newZombie.x = tileX * 32;
 			newZombie.y = tileY * 32;
-			addChild(newZombie.getImage());
 			zombies.push(newZombie);
+
+		//	addChild(newZombie.getImage());
+		//	addChild(newZombie.lifeBar)
 			
 			// To be changed later if needed
 			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
@@ -305,6 +357,17 @@ package view.gamestate
 			}
 			
 			newZombie.pathTracker.trackPathList(list);
+		}
+		
+		private function removeZombie(zombie:Zombie):void {
+			removeChild(zombie.getImage())
+			removeChild(zombie.lifeBar)
+			for (var index:uint = 0; index < zombies.length; ++index) {
+				if (zombies[index] == zombie) {
+					zombies.splice(index, 1)
+					break
+				}
+			}
 		}
 		
 		
@@ -325,6 +388,18 @@ package view.gamestate
 					cannonList.splice(index, 1)
 					return true
 				}
+			}
+			return false
+		}
+		
+		
+		public function isInRange(x1:Number, y1:Number, x2:Number, y2:Number, range:Number): Boolean {
+			var distX:Number = x1 - x2
+			var distY:Number = y1 - y2
+			var dist:Number = distX * distX + distY * distY
+
+			if (dist < range * range) {
+				return true
 			}
 			return false
 		}

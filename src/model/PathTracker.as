@@ -29,9 +29,9 @@ package model
 			this.currentPoint = new Point(zombie.x, zombie.y);
 		}
 		
-		public function move(timeDelta:Number): void {
-			zombie.x += moveIndicator.x * (zombie.speed * timeDelta);
-			zombie.y += moveIndicator.y * (zombie.speed * timeDelta);
+		public function move(timeDelta:Number, speed:Number): void {
+			zombie.x += moveIndicator.x * (speed * timeDelta);
+			zombie.y += moveIndicator.y * (speed * timeDelta);
 			
 			// Stop moving x when one unit is reached
 			if ( Math.abs(zombie.x - currentPoint.x) >= pixelUnit) {
@@ -53,9 +53,9 @@ package model
 				}
 			}
 			
-			var currentRotation:Number = RotationManager.getDegreeRotation(zombie.animation.image.rotation);
+			var currentRotation:Number = RotationManager.getDegreeRotation(zombie.currentAnimation.image.rotation);
 			var targetRotation:Number = RotationManager.getViewRotation(moveIndicator.x, moveIndicator.y);
-			zombie.animation.image.rotation = RotationManager.getSmoothRotation(currentRotation, targetRotation, 
+			zombie.currentAnimation.image.rotation = RotationManager.getSmoothRotation(currentRotation, targetRotation, 
 																	rotationSpeed * timeDelta) * RotationManager.DEG_TO_RAD;
 		}
 		

@@ -25,10 +25,10 @@ package model
 		public var x:Number
 		public var y:Number
 		
-		public var attack:uint = 10;
+		public var attackDamage:uint = 10;
 		public var attackDelay:Number = 1.0;
 		public var attackTimer:Number = 0.0;
-		public var range:uint = 128;
+		public var range:uint = 256;
 		
 		private var targetId:int = -1
 		
@@ -90,6 +90,7 @@ package model
 				var bullet:Bullet = bullets[index];
 				if (!bullet.update) {
 					bullet.update = true;
+					bullet.needToBeAddedOnScreen = true;
 					
 					// Place the starting position of the bullet just above the turret
 					distX = targetBounds.x + targetBounds.width / 2 - x;
@@ -102,11 +103,7 @@ package model
 					var distFromTurret:Number = 10.0;
 					bullet.x = this.x + (normalizer.x * distFromTurret);
 					bullet.y = this.y + (normalizer.y * distFromTurret);
-					
-					bullet.targetX = targetBounds.x + targetBounds.width / 2;
-					bullet.targetY = targetBounds.y + targetBounds.height / 2;
-					
-					bullet.needToBeAddedOnScreen = true;
+
 					bulletFired(bullet);
 					break;
 				}
@@ -120,6 +117,8 @@ package model
 		 */
 		protected function bulletFired(bullet:Bullet):void {
 			
+			bullet.targetX = targetBounds.x + targetBounds.width / 2;
+			bullet.targetY = targetBounds.y + targetBounds.height / 2;
 		}
 		
 		
@@ -132,6 +131,8 @@ package model
 			if (bullet.targetHit(targetBounds.width, targetBounds.height, timeDelta)) {
 				bullet.needToBeRemovedOnScreen = true;
 				bullet.update = false;
+				
+				MessageDispatcher.dispatchTelegram(id, targetId, Message.HIT, 0, attackDamage)
 			} else {
 				bullet.targetX = targetBounds.x + targetBounds.width / 2;
 				bullet.targetY = targetBounds.y + targetBounds.height / 2;
@@ -178,7 +179,7 @@ package model
 			this.targetId = targetId
 			
 			if (targetId != -1) {
-				MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, null)
+				MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, attackDamage)
 			}
 		}
 		
