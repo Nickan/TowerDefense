@@ -44,9 +44,6 @@ package model
 			bounds.x = x
 			bounds.y = y
 			animation.update(x + bounds.width / 2, y + bounds.height / 2, aniStateTime)
-			
-			//...
-//			trace("2:Cannon pos:" + x + ": " + y ) 
 		}
 		
 		public function getImage():Image {
@@ -54,7 +51,6 @@ package model
 		}
 		
 		override public function handleTelegram(telegram:Telegram):Boolean {
-			
 			switch (telegram.message) {
 			case Message.TARGET:
 				MessageDispatcher.dispatchTelegram(id, telegram.senderId, Message.TARGET_RESPONSE, 0, bounds)

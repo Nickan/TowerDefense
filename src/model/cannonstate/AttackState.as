@@ -37,13 +37,16 @@ package model.cannonstate
 					cannon.bulletUpdate(bullet, timeDelta)
 				}
 				
-				
+			}
+			
+			if (!cannon.isInRange(cannon.getTargetBounds())) {
+				cannon.setIdle()
 			}
 			
 		}
 		
 		public function exit(baseEntity:BaseEntity):void {
-			
+			var cannon:Cannon = (Cannon) (baseEntity)
 		}
 		
 		public function onMessage(telegram:Telegram):Boolean {

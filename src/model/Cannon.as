@@ -30,7 +30,6 @@ package model
 		public var attackTimer:Number = 0.0;
 		public var range:uint = 128;
 		
-	//	public var targetZombie:Zombie = null;
 		private var targetId:int = -1
 		
 		public var bullets:Array;
@@ -38,6 +37,8 @@ package model
 		public var rotationSpeed:Number = 100.0;
 
 		protected var targetBounds:Rectangle = null
+		
+		public var numOfBulletFired:int = 0
 		
 		
 		private static var distX:Number;
@@ -134,8 +135,6 @@ package model
 			} else {
 				bullet.targetX = targetBounds.x + targetBounds.width / 2;
 				bullet.targetY = targetBounds.y + targetBounds.height / 2;
-				//...
-			//	trace("2:pos: " + bullet.x + ": " + bullet.y);
 			}
 		}
 
@@ -177,7 +176,10 @@ package model
 		
 		public function setTargetId(targetId:int):void {
 			this.targetId = targetId
-			MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, null)
+			
+			if (targetId != -1) {
+				MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, null)
+			}
 		}
 		
 		public function getTargetId():int {
@@ -186,6 +188,10 @@ package model
 		
 		public function getTargetBounds():Rectangle {
 			return targetBounds
+		}
+		
+		public function setIdle():void {
+			stateMachine.changeState(idleState)
 		}
 		
 		override public function handleTelegram(telegram:Telegram):Boolean {

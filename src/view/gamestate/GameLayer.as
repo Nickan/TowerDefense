@@ -161,9 +161,6 @@ package view.gamestate
 					if (norCannon.isInRange(zombie.getBounds())) {
 						norCannon.setTargetId(zombie.getId())
 					}
-					
-					// Go to the next cannon if this operation is done
-					continue;
 				}
 
 				norCannon.update(timeDelta);
@@ -176,13 +173,10 @@ package view.gamestate
 				var splashCannon:Cannon = splashCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (splashCannon.getTargetId() != -1) {
+				if (splashCannon.getTargetId() == -1) {
 					if (splashCannon.isInRange(zombie.getBounds())) {
 						splashCannon.setTargetId(zombie.getId())
 					}
-					
-					// Go to the next cannon if this operation is done
-					continue;
 				}
 
 				splashCannon.update(timeDelta);
@@ -195,13 +189,10 @@ package view.gamestate
 				var iceCannon:Cannon = iceCannons[index];
 				
 				// If the cannon doesn't have a target, then check for the potential target that is in range
-				if (iceCannon.getTargetId() != -1) {
+				if (iceCannon.getTargetId() == -1) {
 					if (iceCannon.isInRange(zombie.getBounds())) {
 						iceCannon.setTargetId(zombie.getId())
 					}
-					
-					// Go to the next cannon if this operation is done
-					continue;
 				}
 
 				iceCannon.update(timeDelta);
