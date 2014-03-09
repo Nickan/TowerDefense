@@ -1,6 +1,7 @@
 package model 
 {
 	import flash.geom.Point;
+	import framework1_0.finitestatemachine.EntityManager;
 	import starling.display.Sprite;
 	import starling.textures.Texture;
 	/**
@@ -32,6 +33,10 @@ package model
 				bulletHitTheGround = true
 				targetArea.x = bullet.targetX
 				targetArea.y = bullet.targetY
+				
+				if (EntityManager.getEntity(targetId) == null) {
+					setIdle()
+				}
 			}
 		}
 		

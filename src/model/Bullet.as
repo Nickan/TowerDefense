@@ -10,7 +10,7 @@ package model
 	 * @author Nickan
 	 */
 	public class Bullet extends Image {
-		public var vector:Point = new Point();
+		public static var vector:Point = new Point();
 		public var speed:Number = 128;
 		
 		public var update:Boolean = false;
@@ -27,7 +27,7 @@ package model
 		}
 		
 		/**
-		 * Checks if the target has been hit, I might removed the targetWidth and height if needed
+		 * Checks if the target has been hit, tracks the set target. I might removed the targetWidth and height if needed
 		 * @param	targetWidth
 		 * @param	targetHeight
 		 * @param	timeDelta
@@ -37,9 +37,6 @@ package model
 			// Get the normal vector between the target and this bullet
 			vector.x = x - targetX;
 			vector.y = y - targetY;
-			
-			//...
-		//	trace("2:pos: " + x + ": " + y);
 			
 			// If the length of the distance betweem the target(zombie) and the bullet is lower than the half of the width
 			// or height of the target, then it already hit the zombie. No point of updating anything

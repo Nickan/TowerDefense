@@ -196,15 +196,22 @@ package view.gamestate
 				camPoint.x += (touch.previousGlobalX - touch.globalX);
 				camPoint.y += (touch.previousGlobalY - touch.globalY);
 				
+				var scrollAllowanceWidth:Number = 32
 				// Limiting the scrolling of mouse
 				if (camPoint.x < 400) {
 					camPoint.x = 400;
+				} else if (camPoint.x > 1200 + scrollAllowanceWidth) {
+					camPoint.x = 1200 + scrollAllowanceWidth
 				}
 				
+				var scrollAllowanceHeight:Number = 16
 				if (camPoint.y < 300) {
 					camPoint.y = 300;
+				} else if (camPoint.y > 932 + scrollAllowanceHeight) {
+					
+					camPoint.y = 932 + scrollAllowanceHeight
 				}
-
+				
 			}
 		}
 		

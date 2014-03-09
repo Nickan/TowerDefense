@@ -38,8 +38,6 @@ package model
 		private var aniFreezing:Animation
 		public var lifeBar:RectangleImage
 		
-		private var image:Image
-		
 		public var parentSprite:Sprite
 		
 		public function Zombie(walkingBmpData:BitmapData, freezingBmpData:BitmapData, parentSprite:Sprite, width:uint, height:uint, 
@@ -52,6 +50,7 @@ package model
 			setAnimation(aniWalking)
 			
 			lifeBar = new RectangleImage(0, 0, 32, 6, 0x0000FF, 1)
+			parentSprite.addChild(lifeBar)
 			
 			pathTracker = new PathTracker(this)
 		}
@@ -77,19 +76,30 @@ package model
 			lifeBar.y = y - 6
 		}
 		
-		public function getImage():Image {
-			return image
-		}
-		
 		override public function handleTelegram(telegram:Telegram):Boolean {
 			switch (telegram.message) {
 			case Message.TARGET:
 				MessageDispatcher.dispatchTelegram(id, telegram.senderId, Message.TARGET_RESPONSE, 0, bounds)
 				return true
 			case Message.HIT:
+				// Detect first if already dead
+				if (life <= 0) {
+					MessageDispatcher.dispatchTelegram(id, telegram.senderId, Message.DEAD, 0, null)
+					return true
+				}
+				
 				var attackDamage:uint = (uint) (telegram.extraInfo)
 				life -= attackDamage
 				lifeBar.scaleX = life / fullLife
+				
+				// Zombie is dead
+				if (life <= 0) {
+					parentSprite.removeChild(currentAnimation.image)
+					parentSprite.removeChild(lifeBar)
+					
+					MessageDispatcher.dispatchTelegram(id, telegram.senderId, Message.KILLED, 0, null)
+				}
+				
 				return true
 			case Message.SLOWED:
 				var slowScale:Number = (Number) (telegram.extraInfo)
@@ -97,6 +107,9 @@ package model
 				slowedTimer = 0
 				
 				setAnimation(aniFreezing)
+				if (life <= 0) {
+					parentSprite.removeChild(currentAnimation.image)
+				}
 				return true
 			default:
 				return false

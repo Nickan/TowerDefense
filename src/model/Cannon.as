@@ -32,7 +32,7 @@ package model
 		public var attackTimer:Number = 0.0;
 		public var range:uint = 256;
 		
-		private var targetId:int = -1
+		protected var targetId:int = -1
 		
 		public var bullets:Array;
 		
@@ -97,18 +97,18 @@ package model
 					parentSprite.addChild(bullet)
 					
 					// Place the starting position of the bullet just above the turret
-					distX = targetBounds.x + targetBounds.width / 2 - x;
-					distY = targetBounds.y + targetBounds.height / 2 - y;
+					distX = targetBounds.x + targetBounds.width / 2 - x
+					distY = targetBounds.y + targetBounds.height / 2 - y
 					
 					// Normalize it...
-					normalizer.x = distX;
-					normalizer.y = distY;
-					normalizer.normalize(1);
-					var distFromTurret:Number = 10.0;
-					bullet.x = this.x + (normalizer.x * distFromTurret);
-					bullet.y = this.y + (normalizer.y * distFromTurret);
+					normalizer.x = distX
+					normalizer.y = distY
+					normalizer.normalize(1)
+					var distFromTurret:Number = 10.0
+					bullet.x = this.x + (normalizer.x * distFromTurret)
+					bullet.y = this.y + (normalizer.y * distFromTurret)
 
-					bulletFired(bullet);
+					bulletFired(bullet)
 					break;
 				}
 			}
@@ -124,7 +124,6 @@ package model
 			bullet.targetY = targetBounds.y + targetBounds.height / 2;
 		}
 		
-		
 		/**
 		 * Updates the bullet being fired
 		 * @param	bullet
@@ -135,7 +134,11 @@ package model
 				parentSprite.removeChild(bullet)
 				bullet.update = false;
 				
-				MessageDispatcher.dispatchTelegram(id, targetId, Message.HIT, 0, attackDamage)
+				if (EntityManager.getEntity(targetId) != null) {
+					MessageDispatcher.dispatchTelegram(id, targetId, Message.HIT, 0, attackDamage)
+				} else {
+					setIdle()
+				}
 			} else {
 				bullet.targetX = targetBounds.x + targetBounds.width / 2;
 				bullet.targetY = targetBounds.y + targetBounds.height / 2;
@@ -182,7 +185,7 @@ package model
 			this.targetId = targetId
 			
 			if (targetId != -1) {
-				MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, attackDamage)
+				MessageDispatcher.dispatchTelegram(id, targetId, Message.TARGET, 0, null)
 			}
 		}
 		
@@ -203,6 +206,12 @@ package model
 			case Message.TARGET_RESPONSE:
 				targetBounds = EntityManager.getEntity(telegram.senderId).getBounds()
 				stateMachine.changeState(attackState)
+				return true
+			case Message.KILLED:
+				stateMachine.changeState(idleState)
+				return true
+			case Message.DEAD:
+				stateMachine.changeState(idleState)
 				return true
 			default:
 				return false

@@ -10,6 +10,7 @@ package view.gamestate
 	import framework1_0.Animation;
 	import framework1_0.AstarPathFinder;
 	import framework1_0.Circle;
+	import framework1_0.finitestatemachine.EntityManager;
 	import framework1_0.finitestatemachine.messagingsystem.Message;
 	import framework1_0.finitestatemachine.messagingsystem.MessageDispatcher;
 	import framework1_0.Node;
@@ -106,7 +107,7 @@ package view.gamestate
 			normalCannons = new Array()
 			splashCannons = new Array()
 			iceCannons = new Array()
-			zombies = new Array();
+			zombies = new Array()
 			
 			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
 			path6_0 = pathFinder.getShortestPath(6, 0, 24, 23)			
@@ -142,7 +143,11 @@ package view.gamestate
 		public function update(timeDelta:Number): void {
 			if (timeDelta > 100 / 6 * 30)
 				return;
-				
+			
+			updateNormalCannons(timeDelta)
+			updateSplashCannons(timeDelta)
+			updateIceCannons(timeDelta)
+			
 			zombieSpawnUpdate(timeDelta)
 			
 			for (var index:uint = 0; index < zombies.length; ++index) {
@@ -155,10 +160,6 @@ package view.gamestate
 					break;
 				}
 			}
-			
-			updateNormalCannons(timeDelta)
-			updateSplashCannons(timeDelta)
-			updateIceCannons(timeDelta)
 			
 			this.x = 400 - cameraPoint.x
 			this.y = 300 - cameraPoint.y
@@ -230,7 +231,6 @@ package view.gamestate
 		}
 		
 		private function splashBulletHitTheGround(splashCannon:SplashCannon):void {
-			
 			// Loop through all of the zombie, not so wise, to be changed later if I have time
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				var zombie:Zombie = zombies[index]
@@ -239,6 +239,7 @@ package view.gamestate
 						zomBounds.x + zomBounds.width / 2, zomBounds.y + zomBounds.height / 2, splashCannon.blastRadius) ) {
 					//...
 					trace("2:Boom!")
+					MessageDispatcher.dispatchTelegram(splashCannon.getId(), zombie.getId(), Message.HIT, 0, splashCannon.attackDamage)
 				}
 				
 			}
@@ -277,6 +278,7 @@ package view.gamestate
 					//...
 					trace("2:Slow!")
 					MessageDispatcher.dispatchTelegram(splashCannon.getId(), zombie.getId(), Message.SLOWED, 0, splashCannon.slowScale)
+					MessageDispatcher.dispatchTelegram(splashCannon.getId(), zombie.getId(), Message.HIT, 0, splashCannon.attackDamage)
 				}
 				
 			}
@@ -368,14 +370,13 @@ package view.gamestate
 		}
 		
 		private function removeZombie(zombie:Zombie):void {
-			removeChild(zombie.getImage())
-			removeChild(zombie.lifeBar)
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				if (zombies[index] == zombie) {
 					zombies.splice(index, 1)
 					break
 				}
 			}
+			EntityManager.deleteEntity(zombie.getId())
 		}
 		
 		public function setRangeIndicator(x:Number, y:Number, range:Number):void {

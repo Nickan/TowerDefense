@@ -8,7 +8,8 @@ package view.gamestate
 	 * @author Nickan
 	 */
 	public class GameState extends StarlingState {
-
+		public var main:Main
+		
 		private var gameLayer:GameLayer;
 		
 		public function GameState() {
