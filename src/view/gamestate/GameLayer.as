@@ -31,13 +31,14 @@ package view.gamestate
 	 * @author Nickan
 	 */
 	public class GameLayer extends Sprite {
-		
+		// What a horrendous path name list!
+		private var path6_0:Array
 		
 		public var normalCannons:Array
 		public var splashCannons:Array
 		public var iceCannons:Array
 		
-		private var zombies:Array;
+		private var zombies:Array
 		
 		{ // Images
 		[Embed(source="../../../assets/images.png")]
@@ -66,14 +67,14 @@ package view.gamestate
 		}
 		
 		
-		private var pathFinder:AstarPathFinder = new AstarPathFinder(48, 38);
-		private var map:Map = new Map();
+		private var pathFinder:AstarPathFinder = new AstarPathFinder(48, 38)
+		private var map:Map = new Map()
 		
-		public var cameraPoint:Point;
-		private var gameLayerController:GameLayerController;
-		public var camera:StarlingCamera;
+		public var cameraPoint:Point
+		private var gameLayerController:GameLayerController
+		public var camera:StarlingCamera
 		
-		private var rangeIndicator:Circle;
+		private var rangeIndicator:Circle
 		
 		public var purchasePanel:PurchasePanel
 		public var purchasePanelPos:Point = new Point(320, 480)
@@ -83,15 +84,15 @@ package view.gamestate
 		private var rangeIndicatorValue:Number
 		
 		private var zombieSpawnNumber:uint = 0
-		private var zombieSpawnLimit:uint = 50
+		private var zombieSpawnLimit:uint = 5
 		private var zombieSpawnTimer:Number = 0
 		private var zombieSpawnInterval:Number = 2.0
 		
 		public function GameLayer(camera:StarlingCamera)  {
-			super();
-			this.camera = camera;
+			super()
+			this.camera = camera
 			
-			addEventListener(Event.ADDED_TO_STAGE, onAdded);
+			addEventListener(Event.ADDED_TO_STAGE, onAdded)
 		}
 		
 		private function onAdded(): void {
@@ -108,10 +109,7 @@ package view.gamestate
 			zombies = new Array();
 			
 			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
-		//	for (var num:uint = 0; num < 10; ++num) {
-				addZombie(6, 0);
-		//	}
-			
+			path6_0 = pathFinder.getShortestPath(6, 0, 24, 23)			
 			
 			cameraPoint = new Point(400, 300);
 			camera.setUp(cameraPoint);
@@ -145,24 +143,13 @@ package view.gamestate
 			if (timeDelta > 100 / 6 * 30)
 				return;
 				
-			zombieSpawnTimer += timeDelta
-			// Zombie spawn interval
-			if (zombieSpawnTimer >= zombieSpawnInterval) {
-				
-				if (zombieSpawnNumber >= zombieSpawnLimit) {
-					
-				} else {
-					addZombie(6, 0)
-					zombieSpawnTimer -= zombieSpawnInterval
-					++zombieSpawnNumber
-				}
-			}
+			zombieSpawnUpdate(timeDelta)
 			
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				var zombie:Zombie = zombies[index];
 				if (zombie.life > 0) {
 				
-					zombie.update(timeDelta);
+					zombie.update(timeDelta)
 				} else {
 					removeZombie(zombie)
 					break;
@@ -173,15 +160,33 @@ package view.gamestate
 			updateSplashCannons(timeDelta)
 			updateIceCannons(timeDelta)
 			
-			this.x = 400 - cameraPoint.x;
-			this.y = 300 - cameraPoint.y;	
+			this.x = 400 - cameraPoint.x
+			this.y = 300 - cameraPoint.y
 			
 			// Not scrolling
 			purchasePanel.x = purchasePanelPos.x - this.x
 			purchasePanel.y = purchasePanelPos.y - this.y
-			camera.update();
+			camera.update()
 			
 			MessageDispatcher.update(timeDelta)
+		}
+		
+		private function zombieSpawnUpdate(timeDelta:Number):void {
+			zombieSpawnTimer += timeDelta
+			// Zombie spawn interval
+			if (zombieSpawnTimer >= zombieSpawnInterval) {
+				
+				if (zombieSpawnNumber >= zombieSpawnLimit) {
+					
+				} else {
+					addZombie(6, 0, path6_0)
+					zombieSpawnTimer -= zombieSpawnInterval
+					++zombieSpawnNumber
+					
+					//...
+					trace("2:Zombie spawned: " + zombieSpawnNumber)
+				}
+			}
 		}
 		
 		private function updateNormalCannons(timeDelta:Number):void {
@@ -344,7 +349,7 @@ package view.gamestate
 			removeCannonFromArray(cannon, iceCannons)
 		}
 		
-		private function addZombie(tileX:Number, tileY:Number):void {
+		private function addZombie(tileX:Number, tileY:Number, pathList:Array):void {
 			var aniRect:Rectangle = new Rectangle(0, 128, 480, 32)
 			var walkingBmpData:BitmapData = new BitmapData(480, 32)
 			walkingBmpData.copyPixels(allBmp.bitmapData, aniRect, new Point())
@@ -358,16 +363,8 @@ package view.gamestate
 			newZombie.x = tileX * 32;
 			newZombie.y = tileY * 32;
 			zombies.push(newZombie);
-
-			// To be changed later if needed
 			
-			var list:Array = pathFinder.getShortestPath(tileX, tileY, 0, 8);
-			
-			for (var index:uint = 0; index < list.length; ++index) {
-		//		trace("2:path: " + list[index].x + ": " + list[index].y);
-			}
-			
-			newZombie.pathTracker.trackPathList(list);
+			newZombie.pathTracker.trackPathList(pathList);
 		}
 		
 		private function removeZombie(zombie:Zombie):void {
@@ -381,7 +378,6 @@ package view.gamestate
 			}
 		}
 		
-		
 		public function setRangeIndicator(x:Number, y:Number, range:Number):void {
 			if (rangeIndicatorValue != range) {
 				rangeIndicator.setRadius(range)
@@ -391,7 +387,6 @@ package view.gamestate
 			rangeIndicator.x = x - rangeIndicator.width / 2;
 			rangeIndicator.y = y - rangeIndicator.height / 2;
 		}
-		
 		
 		public function removeCannonFromArray(cannon:Cannon, cannonList:Array):Boolean {
 			for (var index:int = 0; index < cannonList.length; ++index) {
@@ -403,8 +398,7 @@ package view.gamestate
 			return false
 		}
 		
-		
-		public function isInRange(x1:Number, y1:Number, x2:Number, y2:Number, range:Number): Boolean {
+		private function isInRange(x1:Number, y1:Number, x2:Number, y2:Number, range:Number): Boolean {
 			var distX:Number = x1 - x2
 			var distY:Number = y1 - y2
 			var dist:Number = distX * distX + distY * distY
