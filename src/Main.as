@@ -4,13 +4,14 @@ package
 	import citrus.core.starling.ViewportMode;
 	import flash.events.Event;
 	import view.gamestate.GameState;
+	import view.menustate.MenuState;
 	
 	/**
 	 * ...
 	 * @author Nickan
 	 */
 	
-//	[SWF(width = "800", height = "600", framerate = "60", backgroundColor = "#000000")]
+	[SWF(width = "800", height = "600", framerate = "60", backgroundColor = "#000000")]
 	public class Main extends StarlingCitrusEngine
 	{
 		
@@ -32,7 +33,8 @@ package
 		{
 			//load assets etc..
 			super.handleStarlingReady();
-			state = new GameState();
+		//	state = new GameState();
+			state = new MenuState(this)
 		}
 		
 	}
