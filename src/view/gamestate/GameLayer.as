@@ -33,13 +33,21 @@ package view.gamestate
 	 */
 	public class GameLayer extends Sprite {
 		// What a horrendous path name list!
-		private var path6_0:Array
+		public var path6_0:Array
+		public var path14_0:Array
+		public var path21_0:Array
+		public var path29_0:Array
+		public var path44_0:Array
+		public var path50_8:Array
+		public var path0_8:Array
+		public var path0_23:Array
+		public var path50_23:Array
 		
 		public var normalCannons:Array
 		public var splashCannons:Array
 		public var iceCannons:Array
 		
-		private var zombies:Array
+		public var zombies:Array
 		
 		{ // Images
 		[Embed(source="../../../assets/images.png")]
@@ -68,8 +76,8 @@ package view.gamestate
 		}
 		
 		
-		private var pathFinder:AstarPathFinder = new AstarPathFinder(48, 38)
-		private var map:Map = new Map()
+		private var pathFinder:AstarPathFinder = new AstarPathFinder(50, 38)
+		public var map:Map = new Map()
 		
 		public var cameraPoint:Point
 		private var gameLayerController:GameLayerController
@@ -84,10 +92,8 @@ package view.gamestate
 		// there is no point setting it up again
 		private var rangeIndicatorValue:Number
 		
-		private var zombieSpawnNumber:uint = 0
-		private var zombieSpawnLimit:uint = 5
-		private var zombieSpawnTimer:Number = 0
-		private var zombieSpawnInterval:Number = 2.0
+		// For now, it manages the zombie spawn
+		private var levelManager:LevelManager
 		
 		public function GameLayer(camera:StarlingCamera)  {
 			super()
@@ -108,9 +114,10 @@ package view.gamestate
 			splashCannons = new Array()
 			iceCannons = new Array()
 			zombies = new Array()
+			levelManager = new LevelManager(this)
 			
-			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
-			path6_0 = pathFinder.getShortestPath(6, 0, 24, 23)			
+			initializePathLists()
+			
 			
 			cameraPoint = new Point(400, 300);
 			camera.setUp(cameraPoint);
@@ -140,6 +147,20 @@ package view.gamestate
 			addChild(rangeIndicator);
 		}
 		
+		private function initializePathLists():void {
+			pathFinder.ignoreNodeList = map.getIgnoredNodeList();
+			var targetNode:Node = new Node(24, 23)
+			path6_0 = pathFinder.getShortestPath(6, 0, targetNode.x, targetNode.y)
+			path14_0 = pathFinder.getShortestPath(14, 0, targetNode.x, targetNode.y)
+			path21_0 = pathFinder.getShortestPath(21, 0, targetNode.x, targetNode.y)
+			path29_0 = pathFinder.getShortestPath(29, 0, targetNode.x, targetNode.y)
+			path44_0 = pathFinder.getShortestPath(44, 0, targetNode.x, targetNode.y)
+			path50_8 = pathFinder.getShortestPath(50, 8, targetNode.x, targetNode.y)
+			path0_8 = pathFinder.getShortestPath(0, 8, targetNode.x, targetNode.y)
+			path0_23 = pathFinder.getShortestPath(0, 23, targetNode.x, targetNode.y)
+			path50_23 = pathFinder.getShortestPath(50, 23, targetNode.x, targetNode.y)
+		}
+		
 		public function update(timeDelta:Number): void {
 			if (timeDelta > 100 / 6 * 30)
 				return;
@@ -148,7 +169,7 @@ package view.gamestate
 			updateSplashCannons(timeDelta)
 			updateIceCannons(timeDelta)
 			
-			zombieSpawnUpdate(timeDelta)
+			levelManager.update(timeDelta)
 			
 			for (var index:uint = 0; index < zombies.length; ++index) {
 				var zombie:Zombie = zombies[index];
@@ -172,23 +193,7 @@ package view.gamestate
 			MessageDispatcher.update(timeDelta)
 		}
 		
-		private function zombieSpawnUpdate(timeDelta:Number):void {
-			zombieSpawnTimer += timeDelta
-			// Zombie spawn interval
-			if (zombieSpawnTimer >= zombieSpawnInterval) {
-				
-				if (zombieSpawnNumber >= zombieSpawnLimit) {
-					
-				} else {
-					addZombie(6, 0, path6_0)
-					zombieSpawnTimer -= zombieSpawnInterval
-					++zombieSpawnNumber
-					
-					//...
-					trace("2:Zombie spawned: " + zombieSpawnNumber)
-				}
-			}
-		}
+		
 		
 		private function updateNormalCannons(timeDelta:Number):void {
 			for (var index:uint = 0; index < normalCannons.length; ++index) {
@@ -351,7 +356,7 @@ package view.gamestate
 			removeCannonFromArray(cannon, iceCannons)
 		}
 		
-		private function addZombie(tileX:Number, tileY:Number, pathList:Array):void {
+		public function addZombie(tileX:Number, tileY:Number, pathList:Array):void {
 			var aniRect:Rectangle = new Rectangle(0, 128, 480, 32)
 			var walkingBmpData:BitmapData = new BitmapData(480, 32)
 			walkingBmpData.copyPixels(allBmp.bitmapData, aniRect, new Point())

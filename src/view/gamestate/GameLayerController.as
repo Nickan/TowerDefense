@@ -5,6 +5,7 @@ package view.gamestate
 	import flash.ui.Keyboard;
 	import framework1_0.GameSprite;
 	import model.Cannon;
+	import model.Map;
 	import model.SplashCannon;
 	import starling.events.Touch;
 	import starling.events.TouchEvent;
@@ -121,6 +122,9 @@ package view.gamestate
 			var secondRect:Rectangle = gameLayer.purchasePanel.getSecondRect()
 			var thirdRect:Rectangle = gameLayer.purchasePanel.getThirdRect()
 			
+			var tileX:uint = ((uint) (touchX / 32))
+			var tileY:uint = ((uint) (touchY / 32))
+			
 			if (firstRect.contains(touchX - gameLayer.purchasePanel.x, touchY - gameLayer.purchasePanel.y) ) {
 				removeCannon()
 				return
@@ -128,6 +132,9 @@ package view.gamestate
 				removeCannon()
 				return
 			} else if (thirdRect.contains(touchX - gameLayer.purchasePanel.x, touchY - gameLayer.purchasePanel.y) ) {
+				removeCannon()
+				return
+			} else if (Map.map[tileY][tileX] == 1) {
 				removeCannon()
 				return
 			}

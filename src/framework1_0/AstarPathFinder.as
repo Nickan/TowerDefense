@@ -24,6 +24,9 @@ package framework1_0
 		
 		public var enableDiagonalMove:Boolean = false;
 		
+		//...
+		public var adjacentNodes:Array = new Array()
+		
 		public function AstarPathFinder(tileWidth:uint, tileHeight:uint)  {
 			this.tileWidth = tileWidth;
 			this.tileHeight = tileHeight;
@@ -34,9 +37,9 @@ package framework1_0
 		
 		private function createNodeMap(): void {
 			nodeMap = new Array();
-			for (var height:uint = 0; height < tileHeight; ++height) {
+			for (var height:uint = 0; height <= tileHeight; ++height) {
 				nodeMap.push(new Array());
-				for (var width:uint = 0; width < tileWidth; ++width) {
+				for (var width:uint = 0; width <= tileWidth; ++width) {
 					nodeMap[height].push(new Node(width, height, Node.FREE));
 				}
 			}
@@ -56,13 +59,11 @@ package framework1_0
 			/* Potentially to be included in the closed list */
 			openList = new Array();
 			while (true) {
-			//	var beingCheckedNode:Node = closedList[closedList.length - 1];
-			//	var beingCheckedNode:Node = getLowestAdjacentFcostNode(
 			
 				// Get all the free nodes, including those in the open list, but don't belong in the closed list
-				closedList.push(beingCheckedNode);
+				closedList.push(beingCheckedNode)
 				var adjacentNodes:Array = getAdjacentFreeNodes(beingCheckedNode, closedList);
-				
+
 				analyzeAdjacentNodes(beingCheckedNode, adjacentNodes);
 				
 				// Get the next next that has the lowest f cost from the adjacent nodes
@@ -118,7 +119,7 @@ package framework1_0
 		 * @return
 		 */
 		private function getAdjacentFreeNodes(node:Node, closedList:Array): Array {
-			var adjacentNodes:Array = new Array();
+			adjacentNodes.splice(0, adjacentNodes.length)
 			
 			var startX:int = node.x - 1;
 			var startY:int = node.y - 1;
@@ -242,8 +243,8 @@ package framework1_0
 		
 
 		private function setHeuristics(goalNode:Node): void {
-			for (var y:uint = 0; y < tileHeight; ++y) {
-				for (var x:uint = 0; x < tileWidth; ++x) {
+			for (var y:uint = 0; y <= tileHeight; ++y) {
+				for (var x:uint = 0; x <= tileWidth; ++x) {
 					nodeMap[y][x].h = getHeuristic(x, y, goalNode);
 				}
 			}
