@@ -67,7 +67,11 @@ package framework1_0
 				analyzeAdjacentNodes(beingCheckedNode, adjacentNodes);
 				
 				// Get the next next that has the lowest f cost from the adjacent nodes
-				var nextCheckNode:Node = getLowestFcostNode(openList);
+				var nextCheckNode:Node = getLowestHcostNode(adjacentNodes);
+				
+				if (nextCheckNode == null) {
+					nextCheckNode = getLowestHcostNode(openList);
+				}
 				
 				for (var i:uint = 0; i < openList.length; ++i) {
 					if (nextCheckNode.same(openList[i].x, openList[i].y) ) {
@@ -92,25 +96,22 @@ package framework1_0
 			return trackParentNode(startX, startY, goalX, goalY);
 		}
 		
-		private function getLowestFcostNode(list:Array): Node {
-			// If there is only one item in the list (more likely in the open list
-		//	if (list.length == 1) { return list.pop(); }
-			
-			var fCost:uint = uint.MAX_VALUE;
-			var lowestFcostNode:Node = null;
+		private function getLowestHcostNode(list:Array): Node {
+			var hCost:uint = uint.MAX_VALUE;
+			var lowestHcostNode:Node = null;
 			
 			for (var index:uint = 0; index < list.length; ++index) {
 				var tempNode:Node = list[index];
 				
 				// If the tempNode being analyzed has the lower f cost compare to the current registed f cost
 				// Then save the address of that node to compare against the remaining nodes in the list
-				if (tempNode.f < fCost) {
-					fCost = tempNode.f;
-					lowestFcostNode = tempNode;
+				if (tempNode.h < hCost) {
+					hCost = tempNode.h;
+					lowestHcostNode = tempNode;
 				}
 			}
 			
-			return lowestFcostNode;
+			return lowestHcostNode;
 		}
 		
 		/**
@@ -119,6 +120,7 @@ package framework1_0
 		 * @return
 		 */
 		private function getAdjacentFreeNodes(node:Node, closedList:Array): Array {
+			// Clearing the adjacent node
 			adjacentNodes.splice(0, adjacentNodes.length)
 			
 			var startX:int = node.x - 1;
